@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Confiteor - A companion for Confession</title>
+<meta name="description" content="A quiet, private companion for the Sacrament of Reconciliation. Examine your conscience, flag and weigh your sins, learn the rite, and keep a confession log - all offline, all on your device.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#17130f;
+    --night:#1e1710;
+    --oak:#271e16;
+    --oak-2:#302518;
+    --line:#3a2d1f;
+    --gold:#c8a45a;
+    --gold-soft:#e2c98b;
+    --gold-dim:#8f7a4d;
+    --violet:#8a739e;
+    --violet-deep:#4b3c5e;
+    --mortal:#cd6a50;
+    --mortal-deep:#5e2c22;
+    --venial:#c8a45a;
+    --ivory:#ece0cc;
+    --muted:#a4937a;
+    --faint:#7c6d58;
+    --shadow:0 18px 44px rgba(0,0,0,.5);
+    --tab-h:66px;
+    --head-h:54px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--void);color:var(--ivory);
+    font-family:'Inter',system-ui,sans-serif;min-height:100dvh;
+    -webkit-font-smoothing:antialiased;overflow-x:hidden;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(120% 80% at 50% -10%, rgba(200,164,90,.14), transparent 55%),
+      radial-gradient(90% 60% at 50% 115%, rgba(75,60,94,.16), transparent 60%);
+  }
+
+  header{
+    position:fixed;top:0;left:0;right:0;height:var(--head-h);z-index:40;
+    display:flex;align-items:center;justify-content:space-between;padding:0 16px;
+    background:linear-gradient(180deg, rgba(23,19,15,.96), rgba(23,19,15,.82));
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex;align-items:center;gap:9px;}
+  .brand .num{font-family:'Inter';font-size:11px;font-weight:600;letter-spacing:.14em;color:var(--void);background:var(--gold);border-radius:5px;padding:3px 6px;line-height:1;}
+  .brand .word{font-family:'Cormorant Garamond';font-weight:600;font-size:23px;letter-spacing:.02em;color:var(--ivory);line-height:1;}
+  .head-tools{display:flex;align-items:center;gap:4px;}
+  .icon-btn{background:none;border:none;color:var(--muted);cursor:pointer;width:38px;height:38px;border-radius:9px;display:grid;place-items:center;transition:color .2s, background .2s;text-decoration:none;}
+  .icon-btn:hover,.icon-btn:focus-visible{color:var(--gold-soft);background:rgba(200,164,90,.08);outline:none;}
+  .icon-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.6;}
+
+  main{position:relative;z-index:1;padding-top:var(--head-h);padding-bottom:calc(var(--tab-h) + env(safe-area-inset-bottom));min-height:100dvh;}
+  .view{display:none;animation:rise .45s ease both;}
+  .view.active{display:block;}
+  @keyframes rise{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+  .wrap{max-width:660px;margin:0 auto;padding:0 18px;}
+
+  /* Home */
+  .hero{position:relative;padding:34px 0 20px;text-align:center;overflow:hidden;}
+  .lattice{position:absolute;left:50%;top:-6px;transform:translateX(-50%);width:220px;height:150px;opacity:.5;pointer-events:none;}
+  .hero-inner{position:relative;z-index:2;}
+  .eyebrow{font-family:'Inter';font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--gold-dim);margin:0 0 10px;}
+  h1.title{font-family:'Cormorant Garamond';font-weight:600;font-size:clamp(46px,15vw,72px);line-height:.92;margin:0;color:var(--gold-soft);letter-spacing:.01em;text-shadow:0 2px 30px rgba(200,164,90,.22);}
+  .subtitle{font-family:'EB Garamond';font-style:italic;font-size:clamp(16px,4.4vw,19px);color:var(--muted);margin:12px 0 0;}
+  .status{margin:24px auto 4px;max-width:440px;background:var(--oak);border:1px solid var(--line);border-radius:14px;padding:15px 18px;display:flex;align-items:center;gap:13px;cursor:pointer;transition:border-color .2s,transform .1s;}
+  .status:hover{border-color:var(--gold-dim);}
+  .status:active{transform:scale(.99);}
+  .status .flame{width:22px;height:26px;flex-shrink:0;}
+  .status .st-text{text-align:left;flex:1;}
+  .status .st-lead{font-family:'Inter';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);}
+  .status .st-main{font-family:'EB Garamond';font-size:18px;color:var(--ivory);margin-top:2px;}
+  .status .chev{color:var(--faint);}
+  .status .chev svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;}
+
+  .cards{display:grid;gap:12px;margin:22px 0 8px;}
+  .card{text-align:left;width:100%;cursor:pointer;background:linear-gradient(180deg,var(--oak-2),var(--oak));border:1px solid var(--line);border-radius:16px;padding:17px 18px;display:flex;align-items:center;gap:15px;color:inherit;transition:border-color .2s,transform .1s,box-shadow .3s;}
+  .card:hover{border-color:var(--gold-dim);box-shadow:var(--shadow);}
+  .card:active{transform:scale(.99);}
+  .card .glyph{width:44px;height:44px;flex-shrink:0;border-radius:12px;display:grid;place-items:center;background:rgba(200,164,90,.1);border:1px solid rgba(200,164,90,.22);color:var(--gold);}
+  .card .glyph svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.5;}
+  .card .c-body{flex:1;}
+  .card .c-title{font-family:'Cormorant Garamond';font-weight:600;font-size:22px;line-height:1.05;color:var(--ivory);}
+  .card .c-sub{font-family:'Inter';font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.4;}
+  .card .c-badge{font-family:'Inter';font-size:11px;font-weight:600;color:var(--void);background:var(--gold);border-radius:20px;padding:3px 9px;margin-left:auto;flex-shrink:0;}
+  .privacy-note{text-align:center;font-family:'EB Garamond';font-style:italic;font-size:14.5px;color:var(--faint);margin:22px auto 4px;max-width:470px;line-height:1.5;display:flex;align-items:center;gap:8px;justify-content:center;}
+  .privacy-note svg{width:15px;height:15px;stroke:var(--gold-dim);fill:none;stroke-width:1.6;flex-shrink:0;}
+
+  /* section chrome */
+  .view-head{padding:24px 0 6px;}
+  .view-head .vh-eyebrow{font-family:'Inter';font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold-dim);}
+  .view-head h2{font-family:'Cormorant Garamond';font-weight:600;font-size:clamp(30px,8vw,40px);margin:6px 0 0;color:var(--ivory);line-height:1;}
+  .view-head p.lede{font-family:'EB Garamond';font-size:16px;color:var(--muted);margin:10px 0 0;line-height:1.5;}
+
+  /* live counter chip (examine) */
+  .count-chip{display:inline-flex;align-items:center;gap:8px;background:var(--night);border:1px solid var(--line);border-radius:20px;padding:6px 14px;margin:16px 0 2px;font-family:'Inter';font-size:13px;color:var(--muted);}
+  .count-chip b{color:var(--gold-soft);font-weight:600;font-family:'Cormorant Garamond';font-size:19px;line-height:1;}
+
+  /* examine accordion */
+  .exam-list{margin:12px 0 0;}
+  .commandment{border-bottom:1px solid var(--line);}
+  .cmd-head{width:100%;background:none;border:none;cursor:pointer;color:inherit;text-align:left;display:flex;align-items:center;gap:14px;padding:16px 2px;}
+  .cmd-num{font-family:'Cormorant Garamond';font-weight:700;font-size:20px;color:var(--gold);width:36px;flex-shrink:0;text-align:center;}
+  .cmd-titles{flex:1;min-width:0;}
+  .cmd-title{font-family:'EB Garamond';font-size:17px;color:var(--ivory);line-height:1.25;}
+  .cmd-count{font-family:'Inter';font-size:12px;font-weight:600;color:var(--void);background:var(--violet);border-radius:20px;padding:2px 8px;margin-right:6px;display:none;}
+  .cmd-count.show{display:inline-block;}
+  .cmd-caret{color:var(--faint);transition:transform .25s;}
+  .cmd-caret svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;}
+  .commandment.open .cmd-caret{transform:rotate(180deg);}
+  .cmd-body{display:none;padding:0 2px 14px;}
+  .commandment.open .cmd-body{display:block;animation:rise .3s ease both;}
+
+  .sin{display:flex;align-items:flex-start;gap:12px;cursor:pointer;padding:11px 12px;border-radius:11px;margin-bottom:6px;background:var(--night);border:1px solid transparent;transition:all .18s;}
+  .sin:hover{border-color:var(--line);}
+  .sin.on{background:rgba(138,115,158,.14);border-color:var(--violet-deep);}
+  .sin .box{width:20px;height:20px;flex-shrink:0;margin-top:2px;border-radius:6px;border:1.6px solid var(--gold-dim);display:grid;place-items:center;transition:all .18s;}
+  .sin.on .box{background:var(--violet);border-color:var(--violet);}
+  .sin .box svg{width:13px;height:13px;stroke:var(--void);fill:none;stroke-width:2.6;opacity:0;transition:opacity .15s;}
+  .sin.on .box svg{opacity:1;}
+  .sin .s-text{font-family:'EB Garamond';font-size:16px;line-height:1.4;color:var(--ivory);}
+  .sin .s-text::first-letter{text-transform:uppercase;}
+  .grave{display:inline-block;font-family:'Inter';font-size:9.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--mortal);border:1px solid var(--mortal-deep);background:rgba(205,106,80,.08);border-radius:4px;padding:2px 6px;margin-left:8px;vertical-align:middle;white-space:nowrap;}
+
+  .add-own{display:flex;gap:8px;margin-top:10px;}
+  .add-own input{flex:1;background:var(--night);border:1px solid var(--line);border-radius:10px;color:var(--ivory);font-family:'EB Garamond';font-size:16px;padding:10px 12px;}
+  .add-own input:focus{outline:none;border-color:var(--gold-dim);}
+  .add-own button{background:var(--oak-2);border:1px solid var(--gold-dim);color:var(--gold-soft);border-radius:10px;font-family:'Inter';font-size:13px;font-weight:600;padding:0 14px;cursor:pointer;}
+
+  /* buttons */
+  .btn{width:100%;border:none;cursor:pointer;border-radius:13px;padding:15px;font-family:'Inter';font-size:15px;font-weight:600;letter-spacing:.01em;display:flex;align-items:center;justify-content:center;gap:9px;transition:transform .1s,filter .2s;}
+  .btn:active{transform:scale(.99);}
+  .btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;}
+  .btn-gold{background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:var(--void);}
+  .btn-gold:hover{filter:brightness(1.05);}
+  .btn-ghost{background:var(--oak);color:var(--ivory);border:1px solid var(--line);}
+  .btn-ghost:hover{border-color:var(--gold-dim);}
+  .btn-violet{background:linear-gradient(180deg,var(--violet),var(--violet-deep));color:var(--ivory);}
+  .btn[disabled]{opacity:.4;cursor:default;}
+
+  .listbar{position:sticky;bottom:calc(var(--tab-h) + env(safe-area-inset-bottom));z-index:5;margin-top:18px;background:linear-gradient(180deg,transparent,var(--void) 30%);padding:20px 0 8px;}
+
+  /* review */
+  .counter{display:flex;gap:10px;margin:6px 0 4px;}
+  .cstat{flex:1;background:var(--oak);border:1px solid var(--line);border-radius:13px;padding:12px 8px;text-align:center;}
+  .cstat .n{font-family:'Cormorant Garamond';font-weight:700;font-size:28px;line-height:1;color:var(--gold-soft);}
+  .cstat .l{font-family:'Inter';font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-top:5px;}
+  .cstat.mortal .n{color:var(--mortal);}
+  .cstat.venial .n{color:var(--venial);}
+
+  .guide{background:rgba(138,115,158,.09);border:1px solid var(--violet-deep);border-radius:14px;margin:14px 0 2px;overflow:hidden;}
+  .guide summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;align-items:center;gap:10px;font-family:'Inter';font-size:14px;font-weight:500;color:var(--violet);}
+  .guide summary::-webkit-details-marker{display:none;}
+  .guide summary svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.7;flex-shrink:0;}
+  .guide summary .caret{margin-left:auto;transition:transform .2s;}
+  .guide[open] summary .caret{transform:rotate(180deg);}
+  .guide .g-body{padding:0 16px 16px;font-family:'EB Garamond';font-size:16px;line-height:1.6;color:var(--ivory);}
+  .guide .g-body b{color:var(--gold-soft);font-weight:500;}
+
+  .rev-card{background:linear-gradient(180deg,var(--oak-2),var(--oak));border:1px solid var(--line);border-radius:15px;padding:15px 16px;margin-bottom:12px;}
+  .rev-card.g-mortal{border-color:var(--mortal-deep);}
+  .rev-top{display:flex;align-items:flex-start;gap:10px;}
+  .rev-text{flex:1;font-family:'EB Garamond';font-size:17px;line-height:1.4;color:var(--ivory);}
+  .rev-text::first-letter{text-transform:uppercase;}
+  .rev-rm{background:none;border:none;color:var(--faint);cursor:pointer;padding:2px;flex-shrink:0;margin:-2px -4px 0 0;}
+  .rev-rm:hover{color:var(--mortal);}
+  .rev-rm svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;}
+  .grav-row{display:flex;gap:6px;margin-top:13px;}
+  .grav-chip{flex:1;background:var(--night);border:1px solid var(--line);color:var(--muted);cursor:pointer;font-family:'Inter';font-size:12.5px;font-weight:500;padding:9px 4px;border-radius:9px;transition:all .18s;}
+  .grav-chip.on[data-g="unsure"]{background:var(--oak-2);color:var(--ivory);border-color:var(--gold-dim);}
+  .grav-chip.on[data-g="venial"]{background:rgba(200,164,90,.16);color:var(--venial);border-color:var(--venial);}
+  .grav-chip.on[data-g="mortal"]{background:rgba(205,106,80,.16);color:var(--mortal);border-color:var(--mortal);}
+  .grave-hint{font-family:'EB Garamond';font-style:italic;font-size:14px;line-height:1.45;color:var(--mortal);margin-top:10px;display:flex;gap:8px;}
+  .grave-hint svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.6;flex-shrink:0;margin-top:3px;}
+  .note-field{width:100%;margin-top:11px;background:var(--night);border:1px solid var(--line);border-radius:10px;color:var(--ivory);font-family:'EB Garamond';font-size:16px;line-height:1.4;padding:10px 12px;resize:vertical;min-height:0;}
+  .note-field:focus{outline:none;border-color:var(--gold-dim);}
+  .note-toggle{background:none;border:none;color:var(--faint);font-family:'Inter';font-size:12.5px;cursor:pointer;padding:8px 0 0;display:inline-flex;align-items:center;gap:6px;}
+  .note-toggle:hover{color:var(--gold-dim);}
+  .note-toggle svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;}
+
+  .empty{text-align:center;padding:50px 20px;color:var(--faint);font-family:'EB Garamond';font-style:italic;font-size:18px;line-height:1.5;}
+  .empty svg{width:38px;height:38px;stroke:var(--line);fill:none;stroke-width:1.3;margin-bottom:14px;}
+
+  /* prayers */
+  .prayer{background:linear-gradient(180deg,var(--oak-2),var(--oak));border:1px solid var(--line);border-radius:16px;padding:22px 22px 20px;margin-bottom:16px;position:relative;}
+  .prayer .p-title{font-family:'Cormorant Garamond';font-weight:600;font-size:24px;color:var(--gold-soft);margin:0 0 4px;}
+  .prayer .p-tag{font-family:'Inter';font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:14px;}
+  .prayer .p-text{font-family:'EB Garamond';font-size:18px;line-height:1.62;color:var(--ivory);white-space:pre-line;}
+  .prayer.parch{background:linear-gradient(180deg,#e9dcc2,#e0d0b2);border-color:#cbb58a;}
+  .prayer.parch .p-title{color:#6b4e26;}
+  .prayer.parch .p-tag{color:#a08347;}
+  .prayer.parch .p-text{color:#3d2f1c;}
+
+  /* rite */
+  .rite-toggle{display:flex;gap:6px;margin:18px 0 4px;}
+  .rite-toggle button{flex:1;background:var(--night);border:1px solid var(--line);cursor:pointer;color:var(--muted);font-family:'Inter';font-size:13.5px;font-weight:500;padding:12px;border-radius:12px;transition:all .2s;}
+  .rite-toggle button.on{border-color:var(--gold-dim);color:var(--gold-soft);background:var(--oak-2);}
+  .steps{counter-reset:step;margin-top:6px;}
+  .step{display:flex;gap:15px;padding:16px 0;border-bottom:1px solid var(--line);}
+  .step .s-num{counter-increment:step;flex-shrink:0;width:34px;height:34px;border-radius:50%;border:1px solid var(--gold-dim);color:var(--gold);display:grid;place-items:center;font-family:'Cormorant Garamond';font-weight:700;font-size:18px;}
+  .step .s-num::before{content:counter(step);}
+  .step .s-body h3{font-family:'EB Garamond';font-size:18px;color:var(--ivory);margin:5px 0 4px;font-weight:500;}
+  .step .s-body p{font-family:'Inter';font-size:14px;color:var(--muted);margin:0;line-height:1.55;}
+  .step .s-body .say{font-family:'EB Garamond';font-style:italic;font-size:17px;color:var(--gold-soft);background:rgba(200,164,90,.07);border-left:2px solid var(--gold-dim);padding:9px 13px;border-radius:0 8px 8px 0;margin-top:9px;line-height:1.45;}
+  .reassure{background:rgba(138,115,158,.1);border:1px solid var(--violet-deep);border-radius:14px;padding:15px 17px;margin:16px 0 2px;font-family:'EB Garamond';font-size:16px;line-height:1.55;color:var(--ivory);}
+  .reassure b{color:var(--violet);font-weight:500;font-style:normal;}
+
+  .conf{text-align:center;padding:10px 0 0;}
+  .conf-dots{display:flex;gap:7px;justify-content:center;margin:6px 0 26px;}
+  .conf-dots span{width:7px;height:7px;border-radius:50%;background:var(--line);transition:all .3s;}
+  .conf-dots span.on{background:var(--gold);width:20px;border-radius:4px;}
+  .conf-stage{min-height:44vh;display:flex;flex-direction:column;justify-content:center;}
+  .conf-eyebrow{font-family:'Inter';font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:16px;}
+  .conf-say{font-family:'EB Garamond';font-size:clamp(22px,6vw,28px);line-height:1.4;color:var(--gold-soft);max-width:520px;margin:0 auto;}
+  .conf-note{font-family:'Inter';font-size:14px;color:var(--muted);margin:20px auto 0;max-width:460px;line-height:1.55;}
+  .conf-recall{margin:16px auto 0;max-width:480px;text-align:left;}
+  .conf-recall .r-lead{font-family:'Inter';font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);text-align:center;margin-bottom:10px;}
+  .conf-recall ul{list-style:none;margin:0;padding:0;}
+  .conf-recall li{font-family:'EB Garamond';font-size:16.5px;color:var(--ivory);padding:9px 0;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:flex-start;}
+  .conf-recall li .rtext::first-letter{text-transform:uppercase;}
+  .conf-recall li .rcol{flex:1;min-width:0;}
+  .conf-recall li .rnote{display:block;font-family:'Inter';font-size:13px;color:var(--muted);margin-top:4px;line-height:1.45;}
+  .conf-recall li .tag{font-family:'Inter';font-size:9.5px;font-weight:700;letter-spacing:.06em;padding:2px 6px;border-radius:4px;flex-shrink:0;margin-top:2px;}
+  .conf-recall li .tag.m{color:var(--mortal);border:1px solid var(--mortal-deep);}
+  .conf-recall li .tag.v{color:var(--venial);border:1px solid var(--gold-dim);}
+  .conf-nav{display:flex;gap:10px;margin-top:26px;}
+  .conf-nav .btn{flex:1;}
+
+  /* settings + log */
+  .set-group{background:var(--oak);border:1px solid var(--line);border-radius:14px;padding:4px 16px;margin-bottom:14px;}
+  .set-group.pad-log{padding:16px;}
+  .set-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px 0;border-bottom:1px solid var(--line);}
+  .set-row:last-child{border-bottom:none;}
+  .set-row .s-label{font-family:'Inter';font-size:14.5px;color:var(--ivory);}
+  .set-row .s-desc{font-family:'Inter';font-size:12px;color:var(--faint);margin-top:2px;line-height:1.4;}
+  .set-row input[type=date]{background:var(--night);border:1px solid var(--line);border-radius:9px;color:var(--ivory);font-family:'Inter';font-size:16px;padding:8px 10px;}
+  .set-row input[type=date]:focus{outline:none;border-color:var(--gold-dim);}
+  .link-btn{background:none;border:none;color:var(--violet);font-family:'Inter';font-size:14px;font-weight:500;cursor:pointer;padding:0;}
+  .link-btn.danger{color:#c47a6a;}
+  .tog{width:46px;height:27px;border-radius:20px;background:var(--line);border:none;cursor:pointer;position:relative;flex-shrink:0;transition:background .2s;}
+  .tog::after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:var(--ivory);transition:left .2s;}
+  .tog.on{background:var(--violet);}
+  .tog.on::after{left:22px;}
+
+  .log-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+  .log-head .lh-title{font-family:'Cormorant Garamond';font-weight:600;font-size:21px;color:var(--gold-soft);}
+  .log-head .lh-count{font-family:'Inter';font-size:12px;color:var(--faint);}
+  .log-add{display:flex;gap:8px;margin:12px 0 6px;}
+  .log-add input{flex:1;background:var(--night);border:1px solid var(--line);border-radius:10px;color:var(--ivory);font-family:'Inter';font-size:16px;padding:9px 11px;}
+  .log-add input:focus{outline:none;border-color:var(--gold-dim);}
+  .log-add button{background:var(--oak-2);border:1px solid var(--gold-dim);color:var(--gold-soft);border-radius:10px;font-family:'Inter';font-size:13px;font-weight:600;padding:0 15px;cursor:pointer;}
+  .log-list{list-style:none;margin:8px 0 0;padding:0;}
+  .log-list li{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);}
+  .log-list li:last-child{border-bottom:none;}
+  .log-list li .dot{width:8px;height:8px;border-radius:50%;background:var(--gold-dim);flex-shrink:0;}
+  .log-list li:first-child .dot{background:var(--gold);box-shadow:0 0 10px rgba(200,164,90,.5);}
+  .log-list li .l-date{font-family:'EB Garamond';font-size:17px;color:var(--ivory);}
+  .log-list li .l-rel{font-family:'Inter';font-size:12px;color:var(--faint);margin-left:auto;}
+  .log-list li .l-rm{background:none;border:none;color:var(--faint);cursor:pointer;padding:4px;}
+  .log-list li .l-rm:hover{color:var(--mortal);}
+  .log-list li .l-rm svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;}
+  .log-empty{font-family:'EB Garamond';font-style:italic;font-size:15px;color:var(--faint);padding:8px 0 2px;}
+  .about{font-family:'EB Garamond';font-size:15px;line-height:1.6;color:var(--muted);padding:6px 4px 0;}
+  .about a{color:var(--gold-dim);}
+
+  nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;height:calc(var(--tab-h) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);display:flex;background:linear-gradient(180deg,rgba(23,19,15,.85),var(--void));backdrop-filter:blur(10px);border-top:1px solid var(--line);}
+  nav.tabs button{flex:1;background:none;border:none;cursor:pointer;color:var(--faint);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-family:'Inter';font-size:10.5px;letter-spacing:.02em;transition:color .2s;position:relative;}
+  nav.tabs button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;}
+  nav.tabs button.on{color:var(--gold);}
+  nav.tabs button.on::before{content:"";position:absolute;top:0;width:26px;height:2px;border-radius:2px;background:var(--gold);}
+  .tab-badge{position:absolute;top:8px;right:calc(50% - 20px);background:var(--violet);color:var(--void);font-size:9.5px;font-weight:700;min-width:15px;height:15px;border-radius:9px;display:grid;place-items:center;padding:0 3px;}
+
+  .modal-bg{position:fixed;inset:0;z-index:60;background:rgba(10,8,6,.72);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;padding:24px;}
+  .modal-bg.show{display:flex;animation:rise .2s ease both;}
+  .modal{background:var(--oak-2);border:1px solid var(--gold-dim);border-radius:18px;padding:24px;max-width:390px;width:100%;box-shadow:var(--shadow);}
+  .modal h3{font-family:'Cormorant Garamond';font-weight:600;font-size:26px;color:var(--gold-soft);margin:0 0 8px;}
+  .modal p{font-family:'EB Garamond';font-size:16.5px;line-height:1.5;color:var(--ivory);margin:0 0 20px;}
+  .modal .m-actions{display:flex;gap:10px;}
+  .modal .m-actions .btn{flex:1;padding:13px;font-size:14px;}
+
+  .toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 14px);z-index:70;max-width:430px;width:calc(100% - 36px);background:var(--oak-2);border:1px solid var(--gold-dim);color:var(--ivory);font-family:'Inter';font-size:13.5px;line-height:1.45;padding:12px 15px;border-radius:12px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;text-align:center;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .pp-input{width:100%;background:var(--night);border:1px solid var(--line);border-radius:10px;color:var(--ivory);font-family:'Inter';font-size:16px;padding:12px 13px;margin-bottom:10px;}
+  .pp-input:focus{outline:none;border-color:var(--gold-dim);}
+  .pp-show{display:flex;align-items:center;gap:8px;font-family:'Inter';font-size:13px;color:var(--muted);cursor:pointer;margin:2px 0 4px;}
+  .pp-show input{width:16px;height:16px;accent-color:var(--violet);}
+  .pp-err{font-family:'Inter';font-size:13px;color:var(--mortal);min-height:18px;margin:4px 0 12px;}
+
+  .sin .s-text{flex:1;}
+  .sin-xn{display:none;flex-shrink:0;font-family:'Inter';font-size:12px;font-weight:600;color:var(--violet);background:rgba(138,115,158,.16);border-radius:20px;padding:2px 8px;margin-top:1px;}
+  .sin-detail{display:none;padding:2px 10px 12px 46px;}
+  @media (max-width:400px){ .sin-detail{padding-left:38px;} }
+  .cangrave{display:inline-block;font-family:'Inter';font-size:9.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--gold-soft);border:1px solid var(--gold-dim);background:rgba(200,164,90,.08);border-radius:4px;padding:2px 6px;margin-left:8px;vertical-align:middle;white-space:nowrap;}
+  .stepper{display:none;align-items:center;gap:3px;flex-shrink:0;margin-top:-1px;}
+  .st-btn{width:27px;height:27px;border-radius:7px;border:1px solid var(--line);background:var(--night);color:var(--gold-soft);font-family:'Inter';font-size:17px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0;}
+  .st-btn:active{transform:scale(.94);}
+  .st-n{min-width:28px;text-align:center;font-family:'Inter';font-size:13px;color:var(--gold-soft);font-weight:600;}
+  .count-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:13px;}
+  .count-row .cl{font-family:'Inter';font-size:12.5px;color:var(--muted);}
+  .count-row .stepper{display:inline-flex;}
+  .grave-hint.cg{color:var(--gold-soft);}
+  .weigh-btn{width:100%;margin-top:11px;background:rgba(138,115,158,.12);border:1px solid var(--violet-deep);color:var(--violet);font-family:'Inter';font-size:13px;font-weight:500;padding:11px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .weigh-btn:hover{border-color:var(--violet);}
+  .weigh-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;}
+
+  .disc-tagline{font-family:'Inter';font-size:11px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:6px;}
+  .disc-tagline.grave{color:var(--mortal);}
+  .disc-tagline.cangrave{color:var(--gold-soft);}
+  .disc-sin{font-family:'EB Garamond';font-size:19px;color:var(--ivory);line-height:1.35;margin:0 0 16px;}
+  .disc-sin::first-letter{text-transform:uppercase;}
+  .disc-q{background:var(--night);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px;}
+  .disc-q .q-lead{font-family:'EB Garamond';font-size:17px;color:var(--ivory);margin-bottom:4px;}
+  .disc-q .q-hint{font-family:'Inter';font-size:12.5px;color:var(--muted);line-height:1.45;margin-bottom:11px;}
+  .disc-yn{display:flex;gap:8px;}
+  .disc-yn button{flex:1;background:var(--oak);border:1px solid var(--line);color:var(--muted);font-family:'Inter';font-size:14px;font-weight:500;padding:9px;border-radius:9px;cursor:pointer;}
+  .disc-yn button.yes.on{background:rgba(205,106,80,.16);color:var(--mortal);border-color:var(--mortal);}
+  .disc-yn button.no.on{background:rgba(200,164,90,.16);color:var(--venial);border-color:var(--venial);}
+  .disc-verdict{font-family:'EB Garamond';font-style:italic;font-size:16.5px;text-align:center;padding:8px 0 16px;min-height:22px;color:var(--muted);}
+  .disc-verdict.mortal{color:var(--mortal);font-style:normal;}
+  .disc-verdict.venial{color:var(--venial);font-style:normal;}
+  .conf-recall li .cnt{font-family:'Inter';font-size:12px;font-weight:600;color:var(--gold-dim);margin-left:7px;}
+
+  @media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand"><span class="num">066</span><span class="word">Confiteor</span></div>
+  <div class="head-tools">
+    <button class="icon-btn" id="btnSettings" aria-label="Settings" title="Settings">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+    <a class="icon-btn" href="https://augustineiacopelli.github.io/appaday/" aria-label="Back to AppADay portfolio" title="AppADay">
+      <svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>
+    </a>
+  </div>
+</header>
+
+<main>
+  <!-- HOME -->
+  <section class="view active" id="view-home">
+    <div class="hero">
+      <svg class="lattice" viewBox="0 0 220 150" aria-hidden="true">
+        <defs><pattern id="grille" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="22" height="22" fill="none"/>
+          <line x1="0" y1="0" x2="0" y2="22" stroke="#c8a45a" stroke-width="1"/>
+          <line x1="0" y1="0" x2="22" y2="0" stroke="#c8a45a" stroke-width="1"/>
+          <circle cx="11" cy="11" r="1.4" fill="#c8a45a"/>
+        </pattern></defs>
+        <rect x="0" y="0" width="220" height="150" fill="url(#grille)"/>
+      </svg>
+      <div class="hero-inner">
+        <p class="eyebrow">The Sacrament of Reconciliation</p>
+        <h1 class="title">Confiteor</h1>
+        <p class="subtitle">Prepare your heart. Then be made new.</p>
+      </div>
+    </div>
+
+    <div class="wrap">
+      <button class="status" id="statusCard">
+        <svg class="flame" viewBox="0 0 22 26" aria-hidden="true"><path d="M11 1C11 7 4 8 4 15a7 7 0 0 0 14 0c0-4-3-5-3-8 0 2-2 3-2 3 0-4-2-6-2-9z" fill="rgba(200,164,90,.9)"/></svg>
+        <span class="st-text">
+          <span class="st-lead">Since your last confession</span>
+          <span class="st-main" id="statusMain">Set your last confession</span>
+        </span>
+        <span class="chev"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></span>
+      </button>
+
+      <div class="cards">
+        <button class="card" data-go="examine">
+          <span class="glyph"><svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/><path d="M8 11l2.5 2.5L16 8"/></svg></span>
+          <span class="c-body"><span class="c-title">Examine your conscience</span><span class="c-sub">Reflect through the Commandments and flag what to bring.</span></span>
+          <span class="c-badge" id="homeExamCount" style="display:none">0</span>
+        </button>
+        <button class="card" data-go="rite">
+          <span class="glyph"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="9.5" y1="9" x2="9.5" y2="21"/><line x1="14.5" y1="9" x2="14.5" y2="21"/></svg></span>
+          <span class="c-body"><span class="c-title">How to go to Confession</span><span class="c-sub">The rite, step by step. A calm guide for the confessional.</span></span>
+        </button>
+        <button class="card" data-go="prayers">
+          <span class="glyph"><svg viewBox="0 0 24 24"><path d="M12 6c-2-2-5-2-7 0v13c2-2 5-2 7 0m0-13c2-2 5-2 7 0v13c-2-2-5-2-7 0m0-13v13"/></svg></span>
+          <span class="c-body"><span class="c-title">Prayers</span><span class="c-sub">Contrition, thanksgiving, the Confiteor, and Psalm 51.</span></span>
+        </button>
+      </div>
+
+      <p class="privacy-note">
+        <svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+        Everything stays on this device. No account, no cloud, nothing shared.
+      </p>
+    </div>
+  </section>
+
+  <!-- EXAMINE -->
+  <section class="view" id="view-examine">
+    <div class="wrap">
+      <div class="view-head">
+        <span class="vh-eyebrow">Examination of Conscience</span>
+        <h2>Search your heart</h2>
+        <p class="lede">Read slowly. Tap anything that convicts you to flag it, and it joins a private list you can weigh and bring to the priest.</p>
+      </div>
+      <div class="count-chip"><b id="examCountNum">0</b> <span id="examCountWord">flagged</span></div>
+      <div class="exam-list" id="examList"></div>
+      <div class="listbar">
+        <button class="btn btn-gold" data-go="review">
+          <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          <span id="reviewBtnLabel">Review my list</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- REVIEW -->
+  <section class="view" id="view-review">
+    <div class="wrap">
+      <div class="view-head">
+        <span class="vh-eyebrow">What I will confess</span>
+        <h2>Weigh and note</h2>
+        <p class="lede">Mark each as venial or mortal, add a private note if it helps, then bring it in. Nothing here leaves your phone.</p>
+      </div>
+
+      <div class="counter" id="counter">
+        <div class="cstat"><div class="n" id="cTotal">0</div><div class="l">Flagged</div></div>
+        <div class="cstat mortal"><div class="n" id="cMortal">0</div><div class="l">Mortal</div></div>
+        <div class="cstat venial"><div class="n" id="cVenial">0</div><div class="l">Venial</div></div>
+        <div class="cstat"><div class="n" id="cUnsure">0</div><div class="l">To weigh</div></div>
+      </div>
+
+      <details class="guide">
+        <summary>
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>
+          Telling venial from mortal
+          <span class="caret"><svg viewBox="0 0 24 24" width="17" height="17" stroke="currentColor" fill="none" stroke-width="1.7"><path d="M6 9l6 6 6-6"/></svg></span>
+        </summary>
+        <div class="g-body">
+          The Church names three conditions for a <b>mortal</b> sin: it must be grave matter, done with full knowledge that it is seriously wrong, and with the deliberate consent of your will. If even one condition is missing, the sin is <b>venial</b> - real and worth confessing, but it wounds your friendship with God rather than severing it. Grave matter alone does not make a sin mortal; a person can lack full knowledge or full freedom. Confess mortal sins in kind and, as best you can recall, in number, and before receiving Communion again. When you are honestly unsure, name it and let the priest help you weigh it. Scruples and despair are not from God - his mercy is greater than any sin.
+        </div>
+      </details>
+
+      <div id="reviewCards"></div>
+      <div id="reviewEmpty" class="empty" style="display:none">
+        <svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></svg>
+        Nothing flagged yet.<br>Return to the examination and let it guide you.
+      </div>
+
+      <div class="listbar">
+        <button class="btn btn-violet" id="enterConfBtn">
+          <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="9.5" y1="3" x2="9.5" y2="21"/><line x1="14.5" y1="3" x2="14.5" y2="21"/></svg>
+          Enter the confessional
+        </button>
+        <button class="btn btn-ghost" id="clearListBtn" style="margin-top:10px">
+          <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          Clear the list
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- RITE -->
+  <section class="view" id="view-rite">
+    <div class="wrap">
+      <div class="view-head"><span class="vh-eyebrow">The Rite of Penance</span><h2>Going to Confession</h2></div>
+      <div class="rite-toggle" id="riteToggle">
+        <button class="on" data-rite="learn">Read the steps</button>
+        <button data-rite="during">In the confessional</button>
+      </div>
+
+      <div id="riteLearn">
+        <div class="reassure"><b>If it has been a long time,</b> that is exactly what this is for. Just tell the priest how long, and that you may need help with the words. He has heard everything, and he is glad you came.</div>
+        <div class="steps">
+          <div class="step"><span class="s-num"></span><div class="s-body"><h3>Examine your conscience</h3><p>Before you enter, spend a few quiet minutes with the examination. Ask the Holy Spirit to show you honestly.</p></div></div>
+          <div class="step"><span class="s-num"></span><div class="s-body"><h3>Greet the priest</h3><p>Make the Sign of the Cross with him, then open with the traditional greeting.</p><div class="say" id="riteGreeting">Bless me, Father, for I have sinned. It has been ___ since my last confession.</div></div></div>
+          <div class="step"><span class="s-num"></span><div class="s-body"><h3>Confess your sins</h3><p>Tell him your sins simply and honestly. Name mortal sins in kind and number as best you recall. Start with what weighs most.</p></div></div>
+          <div class="step"><span class="s-num"></span><div class="s-body"><h3>Listen and receive your penance</h3><p>The priest may offer a word of counsel, then give you a penance - usually a prayer or an act to complete afterward.</p></div></div>
+          <div class="step"><span class="s-num"></span><div class="s-body"><h3>Pray the Act of Contrition</h3><p>When he asks, express your sorrow. You may use your own words or a traditional prayer.</p><div class="say">O my God, I am heartily sorry for having offended Thee...</div></div></div>
+          <div class="step"><span class="s-num"></span><div class="s-body"><h3>Receive absolution</h3><p>The priest extends his hand and absolves you in the name of the Father, and of the Son, and of the Holy Spirit. Answer "Amen" and make the Sign of the Cross.</p></div></div>
+          <div class="step"><span class="s-num"></span><div class="s-body"><h3>Give thanks, then do your penance</h3><p>He will dismiss you: "Give thanks to the Lord, for he is good." Answer: "His mercy endures forever." Leave in peace and complete your penance soon.</p></div></div>
+        </div>
+      </div>
+
+      <div id="riteDuring" style="display:none">
+        <div class="conf">
+          <div class="conf-dots" id="confDots"></div>
+          <div class="conf-stage" id="confStage"></div>
+          <div class="conf-nav">
+            <button class="btn btn-ghost" id="confBack">Back</button>
+            <button class="btn btn-gold" id="confNext">Next</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRAYERS -->
+  <section class="view" id="view-prayers">
+    <div class="wrap">
+      <div class="view-head"><span class="vh-eyebrow">To pray around the sacrament</span><h2>Prayers</h2></div>
+      <div id="prayerList"></div>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="view" id="view-settings">
+    <div class="wrap">
+      <div class="view-head"><span class="vh-eyebrow">Settings and privacy</span><h2>Settings</h2></div>
+
+      <div class="set-group pad-log">
+        <div class="log-head">
+          <span class="lh-title">Confession log</span>
+          <span class="lh-count" id="logCount"></span>
+        </div>
+        <div class="log-add">
+          <input type="date" id="logDateInput" aria-label="Add a confession date">
+          <button id="logAddBtn">Add</button>
+        </div>
+        <ul class="log-list" id="logList"></ul>
+        <div class="log-empty" id="logEmpty" style="display:none">No confessions logged yet. Add one above, or mark one complete in the confessional.</div>
+      </div>
+
+      <div class="set-group">
+        <div class="set-row">
+          <div><div class="s-label">Back up my data to a file</div><div class="s-desc">Download an encrypted, password-protected copy of your log and flags that only you can open.</div></div>
+          <button class="link-btn" id="exportBtn">Export</button>
+        </div>
+        <div class="set-row">
+          <div><div class="s-label">Restore from a backup file</div><div class="s-desc">Merges a backup back in. Nothing existing is removed.</div></div>
+          <button class="link-btn" id="importBtn">Import</button>
+        </div>
+        <div class="set-row">
+          <div><div class="s-label">Storage protection</div><div class="s-desc" id="persistDesc">Checking whether this browser will keep your data...</div></div>
+        </div>
+      </div>
+      <input type="file" id="importFile" accept="application/json,.json" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;">
+
+      <div class="set-group">
+        <div class="set-row">
+          <div><div class="s-label">Forget notes when I close the app</div><div class="s-desc">Extra privacy. Your flagged list will not be saved between visits.</div></div>
+          <button class="tog" id="sessionTog" aria-label="Toggle session-only notes"></button>
+        </div>
+      </div>
+
+      <div class="set-group">
+        <div class="set-row">
+          <div><div class="s-label">Clear my flagged list</div><div class="s-desc">Remove everything you have flagged and noted.</div></div>
+          <button class="link-btn danger" id="setClearList">Clear</button>
+        </div>
+        <div class="set-row">
+          <div><div class="s-label">Reset everything</div><div class="s-desc">Clears your flagged list and your entire confession log.</div></div>
+          <button class="link-btn danger" id="setResetAll">Reset</button>
+        </div>
+      </div>
+
+      <p class="about">
+        Confiteor keeps your examination entirely on this device. Nothing you flag, note, or log is ever sent anywhere - there is no account, no server, and no AI reading your conscience. The examination list mirrors the one in Daily Examen so the two stay in step. The seal of confession is sacred; so is your privacy here.
+        <br><br>
+        App 066 of the <a href="https://augustineiacopelli.github.io/appaday/">AppADay</a> project.
+      </p>
+    </div>
+  </section>
+</main>
+
+<nav class="tabs" id="tabs">
+  <button data-go="home" class="on"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M12 3v4"/><path d="M10 5h4"/></svg>Home</button>
+  <button data-go="examine"><svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></svg>Examine<span class="tab-badge" id="tabBadge" style="display:none">0</span></button>
+  <button data-go="rite"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="9.5" y1="3" x2="9.5" y2="21"/><line x1="14.5" y1="3" x2="14.5" y2="21"/></svg>Confess</button>
+  <button data-go="prayers"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="4" y1="9" x2="20" y2="9"/></svg>Prayers</button>
+</nav>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3 id="modalTitle">Confirm</h3>
+    <p id="modalText">Are you sure?</p>
+    <div class="m-actions">
+      <button class="btn btn-ghost" id="modalCancel">Cancel</button>
+      <button class="btn btn-violet" id="modalOk">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<div class="modal-bg" id="ppBg">
+  <div class="modal">
+    <h3 id="ppTitle">Password</h3>
+    <p id="ppText"></p>
+    <input type="password" id="ppInput1" class="pp-input" placeholder="Password" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <input type="password" id="ppInput2" class="pp-input" placeholder="Confirm password" autocomplete="off" autocapitalize="off" spellcheck="false" style="display:none">
+    <label class="pp-show"><input type="checkbox" id="ppShow"> Show password</label>
+    <div class="pp-err" id="ppErr"></div>
+    <div class="m-actions">
+      <button class="btn btn-ghost" id="ppCancel">Cancel</button>
+      <button class="btn btn-gold" id="ppOk">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="discBg">
+  <div class="modal">
+    <div class="disc-tagline" id="discTagline"></div>
+    <div class="disc-sin" id="discSin"></div>
+    <div class="disc-body" id="discBody"></div>
+    <div class="disc-verdict" id="discVerdict"></div>
+    <div class="m-actions">
+      <button class="btn btn-ghost" id="discLater">Decide later</button>
+      <button class="btn btn-gold" id="discSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ===== examination list - mirrors appaday-054-daily-examen SIN_REFERENCE verbatim ===== */
+var SIN_REFERENCE = [
+    { commandment: "I", title: "I am the Lord your God; you shall not have strange gods before me", sins: ["guilty of simony, buying or selling blessed and Holy items", "ignorant of basic catechism: Act of Contrition, Apostles' Creed, the Ten Commandments, the Seven Sacraments", "believed in fortune telling, horoscopes, the occult, charms, tarot cards, seances, or other occult practices", "caused someone to leave the Catholic Faith", "claims good values but bends or abandons them to fit in with a group", "denied being Catholic", "did not love God with my whole heart", "did not truly love God above all, gave greater importance to things of this world", "uses religion to look like a good Christian rather than wanting to be transformed by God's will", "failed to give time to God each day in prayer", "failed to receive Holy Communion at least once a year, especially during Easter", "denied or doubted that God exists", "hated God", "has false gods given greater attention than God: money, profession, drugs, TV, fame, pleasure", "knowingly read anti-Catholic literature", "took an active part in a non-Catholic worship", "willfully doubted or denied the teachings of the Church, heresy", "left the Catholic Faith", "received communion in the state of mortal sin", "refused to believe what God has revealed to us", "involved in the New Age Movement, Eastern religions, atheism, or agnosticism"] },
+    { commandment: "II", title: "You shall not take the name of the Lord your God in vain", sins: ["cursed or broke an oath or vow", "disrespected God's name by misusing it out of frustration, anger, or to look tough", "got angry with God", "broke a private vow", "murmured or complained against God, blasphemy", "hesitated to mention God's name in appropriate situations with friends and family", "lied under oath", "maligned priests or others consecrated to God", "slandered or insulted a sacred person or object", "took God's name in vain", "used God's name carelessly or uselessly", "wished evil on another person"] },
+    { commandment: "III", title: "Remember to keep holy the Sabbath day", sins: ["ate meat on Fridays of Lent or on Ash Wednesday", "deliberately missed Mass on Sundays or Holy Days of Obligation", "did not acknowledge the true presence of Christ in the Eucharist", "did not fast as required on Ash Wednesday", "did not arrive to Mass on time, or left Mass early", "did not try to observe Sunday as a family day and a day of rest", "did unnecessary servile work, physical labor, on a Sunday", "failed to contribute to the support of the Church", "inattentive at Mass or otherwise failed in reverence for the Most Blessed Sacrament", "received Holy Communion without respect and reverence", "required employees to work on a Sunday", "went to Holy Communion without fasting for one hour from food and drink"] },
+    { commandment: "IV", title: "Honor your father and your mother", sins: ["deprived family of the necessities of life", "did not care for aged and infirm relatives", "disobeyed or disrespected parents or legitimate superiors", "did not try to bring peace into home life", "failed to care for the religious needs of children, early Baptism or proper religious instruction", "failed to educate self on the true teachings of the Church", "gave scandal by word or action, especially to the young", "failed in obedience or reverence to others in authority", "did not give family good religious example", "neglected duties to parents", "neglected duties to spouse", "neglected the material needs of children", "neglected to give good religious example to family"] },
+    { commandment: "V", title: "You shall not kill", sins: ["abused my children", "attempted suicide", "encouraged or condoned sterilization", "engaged in sins against human life, such as artificial insemination or in vitro fertilization", "gave bad example by drug abuse, drinking alcohol to excess, fighting, or quarreling", "gave scandal to someone, leading them into sin", "had an abortion or encouraged someone to have an abortion", "abused alcohol or drugs", "been angry or resentful", "harbored hatred in my heart", "mutilated myself through a form of sterilization", "physically harmed someone", "took part in or approved of mercy killing, euthanasia", "used or caused a spouse to use birth control pills"] },
+    { commandment: "VI", title: "You shall not commit adultery", sins: ["abused marriage rights", "not careful to dress modestly", "committed impure acts alone, masturbation", "committed adultery, impure acts with a married person", "committed fornication, impure acts with another outside marriage", "deliberately looked at or read impure videos, shows, pictures, books, or movies", "did not avoid the occasions of impurity", "did not seek to be chaste in thoughts, words, and actions", "did not try to control thoughts and imaginations", "engaged in homosexual activities", "engaged in sexual activities outside of marriage", "encouraged others to sin by failure to maintain good moral standards", "not been faithful to marriage vows in thought and action", "not respected members of the opposite sex, or treated others as objects", "used contraception or artificial birth control in marriage", "married or advised someone to marry outside the Church", "self or spouse had sterilization done", "practiced artificial birth control by pills, device, or withdrawal", "told or listened to impure stories", "used impure or suggestive words", "willfully entertained impure thoughts or desires"] },
+    { commandment: "VII", title: "You shall not steal", sins: ["cheated someone out of what is justly theirs, such as creditors or insurance companies", "did not fulfill contracts, gave or accepted bribes, rashly gambled or speculated", "did not give a fair wage to employees", "did not give a full day's work for a full day's pay", "did not respect the property of other people", "does not seek to share what is owned with the poor", "envies other people's families or possessions", "has not paid debts promptly", "has not returned or made restitution for what was stolen", "overcharged someone or took advantage of another's hardship or ignorance", "took advantage of the poor, simple, inexperienced, or less fortunate", "makes material possessions the purpose of life", "stole, cheated, or helped and encouraged others to steal or keep stolen goods", "wastes time at work, school, or at home"] },
+    { commandment: "VIII", title: "You shall not bear false witness against your neighbor", sins: ["committed perjury under oath", "did not keep secret what should have been kept confidential", "did not stand up for someone unjustly accused, was a channel for rumors true or not", "damaged another's reputation by exaggeration or made-up stories", "gossiped", "lied", "spoke badly of others behind their back", "was critical, negative, or uncharitable in thoughts of others", "was not sincere in dealings with others"] },
+    { commandment: "IX", title: "You shall not covet your neighbor's wife", sins: ["consented to impure thoughts caused by impure reading, movies, websites, talk, or curiosity", "did not pray at once to banish impure thoughts and temptations", "dwelled on impure thoughts or fantasies for the purpose of arousal", "behaved inappropriately with members of the opposite sex, flirting or being superficial", "looked at pornography in books or on screen", "willfully lusted after another person"] },
+    { commandment: "X", title: "You shall not covet your neighbor's goods", sins: ["does not appreciate own good qualities, constantly compares self with others and grows resentful", "guilty of greed or avarice", "has been very selfish", "lacks trust that God will care for material and spiritual needs", "tries to prove superiority by bragging or buying more things", "jealous of or envied other people, families, or possessions", "made material possessions the purpose of life"] }
+  ];
+
+/* Objectively grave matter (an aid, not a verdict). A sin is mortal only if
+   grave matter is joined to full knowledge and deliberate consent. */
+var GRAVE = {};
+[
+  "guilty of simony, buying or selling blessed and Holy items",
+  "believed in fortune telling, horoscopes, the occult, charms, tarot cards, seances, or other occult practices",
+  "caused someone to leave the Catholic Faith",
+  "denied being Catholic",
+  "failed to receive Holy Communion at least once a year, especially during Easter",
+  "denied or doubted that God exists",
+  "hated God",
+  "took an active part in a non-Catholic worship",
+  "willfully doubted or denied the teachings of the Church, heresy",
+  "left the Catholic Faith",
+  "received communion in the state of mortal sin",
+  "refused to believe what God has revealed to us",
+  "murmured or complained against God, blasphemy",
+  "lied under oath",
+  "ate meat on Fridays of Lent or on Ash Wednesday",
+  "deliberately missed Mass on Sundays or Holy Days of Obligation",
+  "did not acknowledge the true presence of Christ in the Eucharist",
+  "did not fast as required on Ash Wednesday",
+  "deprived family of the necessities of life",
+  "gave scandal by word or action, especially to the young",
+  "abused my children",
+  "attempted suicide",
+  "encouraged or condoned sterilization",
+  "engaged in sins against human life, such as artificial insemination or in vitro fertilization",
+  "gave scandal to someone, leading them into sin",
+  "had an abortion or encouraged someone to have an abortion",
+  "harbored hatred in my heart",
+  "mutilated myself through a form of sterilization",
+  "physically harmed someone",
+  "took part in or approved of mercy killing, euthanasia",
+  "used or caused a spouse to use birth control pills",
+  "committed impure acts alone, masturbation",
+  "committed adultery, impure acts with a married person",
+  "committed fornication, impure acts with another outside marriage",
+  "deliberately looked at or read impure videos, shows, pictures, books, or movies",
+  "engaged in homosexual activities",
+  "engaged in sexual activities outside of marriage",
+  "not been faithful to marriage vows in thought and action",
+  "used contraception or artificial birth control in marriage",
+  "married or advised someone to marry outside the Church",
+  "self or spouse had sterilization done",
+  "practiced artificial birth control by pills, device, or withdrawal",
+  "willfully entertained impure thoughts or desires",
+  "committed perjury under oath",
+  "consented to impure thoughts caused by impure reading, movies, websites, talk, or curiosity",
+  "dwelled on impure thoughts or fantasies for the purpose of arousal",
+  "looked at pornography in books or on screen",
+  "willfully lusted after another person"
+].forEach(function(s){ GRAVE[s] = true; });
+function isGrave(t){ return !!GRAVE[t]; }
+
+/* Can be grave under certain circumstances - grave only when the matter is
+   serious (a large amount, real harm, a complete act, serious neglect, etc.). */
+var CANGRAVE = {};
+[
+  "involved in the New Age Movement, Eastern religions, atheism, or agnosticism",
+  "cursed or broke an oath or vow",
+  "broke a private vow",
+  "wished evil on another person",
+  "slandered or insulted a sacred person or object",
+  "did unnecessary servile work, physical labor, on a Sunday",
+  "went to Holy Communion without fasting for one hour from food and drink",
+  "received Holy Communion without respect and reverence",
+  "did not arrive to Mass on time, or left Mass early",
+  "did not care for aged and infirm relatives",
+  "disobeyed or disrespected parents or legitimate superiors",
+  "failed to care for the religious needs of children, early Baptism or proper religious instruction",
+  "neglected duties to parents",
+  "neglected duties to spouse",
+  "neglected the material needs of children",
+  "gave bad example by drug abuse, drinking alcohol to excess, fighting, or quarreling",
+  "abused alcohol or drugs",
+  "been angry or resentful",
+  "abused marriage rights",
+  "did not avoid the occasions of impurity",
+  "encouraged others to sin by failure to maintain good moral standards",
+  "not respected members of the opposite sex, or treated others as objects",
+  "told or listened to impure stories",
+  "used impure or suggestive words",
+  "cheated someone out of what is justly theirs, such as creditors or insurance companies",
+  "did not fulfill contracts, gave or accepted bribes, rashly gambled or speculated",
+  "did not give a fair wage to employees",
+  "did not respect the property of other people",
+  "has not paid debts promptly",
+  "has not returned or made restitution for what was stolen",
+  "overcharged someone or took advantage of another's hardship or ignorance",
+  "took advantage of the poor, simple, inexperienced, or less fortunate",
+  "stole, cheated, or helped and encouraged others to steal or keep stolen goods",
+  "did not keep secret what should have been kept confidential",
+  "damaged another's reputation by exaggeration or made-up stories",
+  "spoke badly of others behind their back",
+  "lied",
+  "behaved inappropriately with members of the opposite sex, flirting or being superficial",
+  "guilty of greed or avarice"
+].forEach(function(s){ CANGRAVE[s] = true; });
+function isCanGrave(t){ return !isGrave(t) && !!CANGRAVE[t]; }
+
+var PRAYERS = [
+  { title:"Prayer Before Confession", tag:"To begin", parch:false, text:"Come, Holy Spirit, enlighten my mind that I may know my sins, and move my heart that I may be truly sorry for them. Help me to confess them honestly and completely, and to resolve, with your grace, to sin no more. Mary, Mother of Mercy, pray for me. Amen." },
+  { title:"Act of Contrition", tag:"Traditional", parch:true, text:"O my God, I am heartily sorry for having offended Thee, and I detest all my sins because of Thy just punishments, but most of all because they offend Thee, my God, who art all good and deserving of all my love. I firmly resolve, with the help of Thy grace, to sin no more and to avoid the near occasions of sin. Amen." },
+  { title:"Act of Contrition", tag:"Contemporary", parch:false, text:"My God, I am sorry for my sins with all my heart. In choosing to do wrong and failing to do good, I have sinned against you, whom I should love above all things. I firmly intend, with your help, to do penance, to sin no more, and to avoid whatever leads me to sin. Our Savior Jesus Christ suffered and died for us. In his name, my God, have mercy. Amen." },
+  { title:"Act of Contrition", tag:"Short form", parch:true, text:"Lord Jesus, have mercy on me, a sinner." },
+  { title:"The Confiteor", tag:"I confess", parch:false, text:"I confess to almighty God and to you, my brothers and sisters, that I have greatly sinned, in my thoughts and in my words, in what I have done and in what I have failed to do, through my fault, through my fault, through my most grievous fault; therefore I ask blessed Mary ever-Virgin, all the Angels and Saints, and you, my brothers and sisters, to pray for me to the Lord our God. Amen." },
+  { title:"Prayer After Confession", tag:"Thanksgiving", parch:false, text:"Lord Jesus, you have washed me clean and set me free. Thank you for the gift of your mercy. Help me to keep the resolutions I have made, to make amends where I can, and to walk from here in the freedom of your children. Give me the grace to love you more each day, and to sin no more. Amen." },
+  { title:"Psalm 51", tag:"The Miserere", parch:true, text:"Have mercy on me, O God, according to thy great mercy. And according to the multitude of thy tender mercies, blot out my iniquity. Wash me yet more from my iniquity, and cleanse me from my sin. A clean heart create in me, O God, and renew a right spirit within me. Cast me not away from thy face, and take not thy holy spirit from me." }
+];
+
+/* ===== state ===== */
+var FLAGKEY="confiteor_flags_v3", FLAGBAK="confiteor_flags_v3_bak";
+var LOGKEY="confiteor_log_v3", LOGBAK="confiteor_log_v3_bak";
+function blank(){ return { history:[], flags:[], sessionOnly:false }; }
+function normalizeFlags(arr){
+  if(!Array.isArray(arr)) return [];
+  return arr.map(function(f){
+    if(typeof f === "string") return { text:f, note:"", gravity:"", count:1, serious:"", knowledge:"", consent:"" };
+    return { text:(f&&f.text)||"", note:(f&&f.note)||"", gravity:(f&&f.gravity)||"", count:(f&&f.count>=1)?f.count:1, serious:(f&&f.serious)||"", knowledge:(f&&f.knowledge)||"", consent:(f&&f.consent)||"" };
+  }).filter(function(f){ return f.text; });
+}
+function normalize(s){
+  if(!s) s = blank();
+  s.flags = normalizeFlags(s.flags);
+  s.history = dedupeSort(Array.isArray(s.history)?s.history:[]);
+  s.sessionOnly = !!s.sessionOnly;
+  return s;
+}
+function readStore(key, bak){
+  var raw=null, corrupt=false, rawUsed=null;
+  try{ raw=localStorage.getItem(key); }catch(e){}
+  if(raw){ try{ return { obj:JSON.parse(raw) }; }catch(e){ corrupt=true; rawUsed=raw; } }
+  try{ var rb=localStorage.getItem(bak); if(rb) return { obj:JSON.parse(rb) }; }catch(e){}
+  return { obj:null, corrupt:corrupt, raw:rawUsed };
+}
+function loadState(){
+  var s = blank();
+  var fr = readStore(FLAGKEY, FLAGBAK);
+  var lr = readStore(LOGKEY, LOGBAK);
+  var flagsObj = fr.obj, logObj = lr.obj;
+  if(!flagsObj && !logObj){ // migrate older single-store formats
+    var comb=null;
+    try{ var r=localStorage.getItem("confiteor_v2"); if(r) comb=JSON.parse(r); }catch(e){}
+    if(!comb){ try{ var r2=localStorage.getItem("confiteor_v2_bak"); if(r2) comb=JSON.parse(r2); }catch(e){} }
+    if(comb){ flagsObj={ flags:comb.flags, sessionOnly:comb.sessionOnly }; logObj={ history:comb.history }; }
+    else { try{ var v1=localStorage.getItem("confiteor_v1"); if(v1){ var o=JSON.parse(v1); flagsObj={ flags:(o.flagged||[]).map(function(t){ return { text:t }; }), sessionOnly:o.sessionOnly }; logObj={ history:o.lastConfession?[o.lastConfession]:[] }; } }catch(e){} }
+  }
+  if(flagsObj){ s.flags=flagsObj.flags||[]; s.sessionOnly=!!flagsObj.sessionOnly; }
+  if(logObj){ s.history=logObj.history||[]; }
+  if(fr.corrupt || lr.corrupt){
+    try{ if(fr.raw) localStorage.setItem(FLAGKEY+"_recovered_"+Date.now(), fr.raw); if(lr.raw) localStorage.setItem(LOGKEY+"_recovered_"+Date.now(), lr.raw); }catch(e){}
+    toast("Some saved data looked damaged. A copy was set aside - restore from a backup file if you have one.");
+  }
+  return normalize(s);
+}
+var saveFailNotified = false;
+function writeStore(key, bak, obj){
+  var str=JSON.stringify(obj), ok=false;
+  try{ localStorage.setItem(key, str); ok=true; }catch(e){}
+  try{ localStorage.setItem(bak, str); }catch(e){}
+  return ok;
+}
+function saveState(){
+  var okF = writeStore(FLAGKEY, FLAGBAK, { flags: state.sessionOnly?[]:state.flags, sessionOnly:state.sessionOnly, v:3 });
+  var okL = writeStore(LOGKEY, LOGBAK, { history:state.history, v:3 });
+  if(okF && okL){ saveFailNotified=false; }
+  else if(!saveFailNotified){ saveFailNotified=true; toast("Couldn't save to this device - storage may be full or blocked. Export a backup to keep your list safe."); }
+}
+var state = loadState();
+
+/* ===== helpers ===== */
+function el(id){ return document.getElementById(id); }
+function pad(n){ return (n<10?"0":"") + n; }
+function todayISO(){ var d=new Date(); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+function dedupeSort(arr){
+  var seen={}, out=[];
+  arr.forEach(function(d){ if(d && !seen[d]){ seen[d]=1; out.push(d); } });
+  out.sort(function(a,b){ return a<b?1:(a>b?-1:0); }); // desc
+  return out;
+}
+function flagIndex(t){ for(var i=0;i<state.flags.length;i++){ if(state.flags[i].text===t) return i; } return -1; }
+function isFlagged(t){ return flagIndex(t) !== -1; }
+function toggleFlag(t){
+  var i = flagIndex(t);
+  if(i===-1) state.flags.push({ text:t, note:"", gravity:"", count:1, serious:"", knowledge:"", consent:"" });
+  else state.flags.splice(i,1);
+  saveState();
+}
+function lastConfession(){ return state.history.length ? state.history[0] : null; }
+
+function intervalPhrase(iso){
+  if(!iso) return null;
+  var then = new Date(iso+"T00:00:00");
+  if(isNaN(then.getTime())) return null;
+  var now = new Date(); now.setHours(0,0,0,0);
+  var d = Math.floor((now-then)/86400000);
+  if(d<0) return null;
+  if(d===0) return "today";
+  if(d===1) return "1 day";
+  if(d<7) return d+" days";
+  if(d<11) return "1 week";
+  if(d<31) return Math.round(d/7)+" weeks";
+  if(d<45) return "about a month";
+  if(d<335) return Math.round(d/30.44)+" months";
+  var y = Math.floor(d/365.25);
+  if(y<=1) return "about a year";
+  return "about "+y+" years";
+}
+function relPhrase(iso){ var p=intervalPhrase(iso); if(!p) return ""; if(p==="today") return "today"; return p+" ago"; }
+function statusText(){
+  var p = intervalPhrase(lastConfession());
+  if(!p) return "Set your last confession";
+  if(p==="today") return "You confessed today";
+  return "It has been "+p;
+}
+function greetingLine(){
+  var p = intervalPhrase(lastConfession());
+  return "Bless me, Father, for I have sinned. It has been "+(p?p:"___")+" since my last confession.";
+}
+function prettyDate(iso){
+  var d = new Date(iso+"T00:00:00");
+  if(isNaN(d.getTime())) return iso;
+  var mo = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  return mo[d.getMonth()]+" "+d.getDate()+", "+d.getFullYear();
+}
+
+/* ===== counts ===== */
+function gravityCounts(){
+  var c = { total:state.flags.length, mortal:0, venial:0, unsure:0 };
+  state.flags.forEach(function(f){
+    if(f.gravity==="mortal") c.mortal++;
+    else if(f.gravity==="venial") c.venial++;
+    else c.unsure++;
+  });
+  return c;
+}
+function updateCounts(){
+  var n = state.flags.length;
+  var badge = el("tabBadge"); badge.style.display = n?"grid":"none"; badge.textContent = n;
+  var hb = el("homeExamCount"); hb.style.display = n?"inline-block":"none"; hb.textContent = n;
+  el("reviewBtnLabel").textContent = n ? ("Review my list ("+n+")") : "Review my list";
+  el("examCountNum").textContent = n;
+  el("examCountWord").textContent = (n===1) ? "flagged" : "flagged";
+  document.querySelectorAll(".cmd-count").forEach(function(c){
+    var cnt = parseInt(c.getAttribute("data-c")||"0",10);
+    if(cnt>0){ c.classList.add("show"); c.textContent = cnt; } else c.classList.remove("show");
+  });
+}
+
+/* ===== examine ===== */
+function checkSVG(){ return '<svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg>'; }
+function buildExamine(){
+  var host = el("examList"); host.innerHTML = "";
+  SIN_REFERENCE.forEach(function(group){
+    var wrap = document.createElement("div");
+    wrap.className = "commandment";
+    var flaggedHere = 0;
+    group.sins.forEach(function(s){ if(isFlagged(s)) flaggedHere++; });
+
+    var head = document.createElement("button");
+    head.className = "cmd-head";
+    head.innerHTML =
+      '<span class="cmd-num">'+group.commandment+'</span>'+
+      '<span class="cmd-titles"><span class="cmd-title"></span></span>'+
+      '<span class="cmd-count" data-c="'+flaggedHere+'"></span>'+
+      '<span class="cmd-caret"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span>';
+    head.querySelector(".cmd-title").textContent = group.title;
+    head.addEventListener("click", function(){ wrap.classList.toggle("open"); });
+
+    var body = document.createElement("div"); body.className = "cmd-body";
+    group.sins.forEach(function(s){ body.appendChild(makeSin(s, wrap)); });
+    body.appendChild(makeAddOwn(wrap));
+
+    wrap.appendChild(head); wrap.appendChild(body); host.appendChild(wrap);
+  });
+  updateCounts();
+}
+function makeSin(s, wrap){
+  var container = document.createElement("div"); container.className="sin-wrap";
+  var row = document.createElement("div"); row.className = "sin" + (isFlagged(s)?" on":"");
+
+  var box = document.createElement("span"); box.className="box"; box.innerHTML=checkSVG();
+  var txt = document.createElement("span"); txt.className="s-text"; txt.textContent = s;
+  if(isGrave(s)){ var g=document.createElement("span"); g.className="grave"; g.textContent="grave matter"; txt.appendChild(g); }
+  else if(isCanGrave(s)){ var g2=document.createElement("span"); g2.className="cangrave"; g2.textContent="can be grave"; txt.appendChild(g2); }
+  var xn = document.createElement("span"); xn.className="sin-xn";
+  row.appendChild(box); row.appendChild(txt); row.appendChild(xn);
+
+  // inline detail: times committed + note
+  var detail = document.createElement("div"); detail.className="sin-detail";
+  var crow=document.createElement("div"); crow.className="count-row";
+  var cl=document.createElement("span"); cl.className="cl"; cl.textContent="Times committed";
+  var stp=document.createElement("span"); stp.className="stepper";
+  var mn=document.createElement("button"); mn.className="st-btn"; mn.type="button"; mn.setAttribute("aria-label","One fewer"); mn.textContent="-";
+  var nn=document.createElement("span"); nn.className="st-n";
+  var pl=document.createElement("button"); pl.className="st-btn"; pl.type="button"; pl.setAttribute("aria-label","One more"); pl.textContent="+";
+  stp.appendChild(mn); stp.appendChild(nn); stp.appendChild(pl);
+  crow.appendChild(cl); crow.appendChild(stp);
+
+  var noteBtn=document.createElement("button"); noteBtn.className="note-toggle";
+  var ta=document.createElement("textarea"); ta.className="note-field"; ta.rows=2; ta.placeholder="A private note to help you remember...";
+  function syncNoteBtn(){ noteBtn.innerHTML='<svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/></svg> '+((ta.value&&ta.value.length)?"Edit note":"Add a note"); }
+  noteBtn.addEventListener("click", function(){ ta.style.display=(ta.style.display==="none")?"block":"none"; if(ta.style.display==="block") ta.focus(); });
+  ta.addEventListener("input", function(){ var f=curFlag(); if(f){ f.note=ta.value; saveState(); } syncNoteBtn(); });
+  detail.appendChild(crow); detail.appendChild(noteBtn); detail.appendChild(ta);
+
+  function curFlag(){ var i=flagIndex(s); return i===-1?null:state.flags[i]; }
+  function refresh(){
+    var f=curFlag();
+    if(f){
+      row.classList.add("on"); detail.style.display="block";
+      nn.textContent="x"+(f.count||1);
+      xn.textContent=(f.count>1)?("x"+f.count):""; xn.style.display=(f.count>1)?"inline-block":"none";
+      ta.value=f.note||""; ta.style.display=(f.note&&f.note.length)?"block":"none";
+    } else {
+      row.classList.remove("on"); detail.style.display="none"; xn.style.display="none";
+    }
+    syncNoteBtn();
+  }
+  mn.addEventListener("click", function(){ var f=curFlag(); if(f&&f.count>1){ f.count--; saveState(); refresh(); } });
+  pl.addEventListener("click", function(){ var f=curFlag(); if(f){ f.count=(f.count||1)+1; saveState(); refresh(); } });
+
+  row.addEventListener("click", function(){
+    toggleFlag(s);
+    var on = isFlagged(s);
+    refresh();
+    recount(wrap);
+    if(on && (isGrave(s)||isCanGrave(s))){ var f=curFlag(); if(f) openDiscernment(f, isGrave(s)?"grave":"cangrave"); }
+  });
+
+  container.appendChild(row); container.appendChild(detail);
+  refresh();
+  return container;
+}
+function makeAddOwn(wrap){
+  var box = document.createElement("div"); box.className="add-own";
+  var input = document.createElement("input"); input.type="text"; input.placeholder="Add something in your own words..."; input.setAttribute("maxlength","140");
+  var btn = document.createElement("button"); btn.textContent="Add";
+  function commit(){
+    var t = input.value.trim(); if(!t) return;
+    if(!isFlagged(t)){ state.flags.push({text:t,note:"",gravity:"",count:1,serious:"",knowledge:"",consent:""}); saveState(); }
+    input.value=""; recount(wrap); updateCounts();
+  }
+  btn.addEventListener("click", commit);
+  input.addEventListener("keydown", function(e){ if(e.key==="Enter") commit(); });
+  box.appendChild(input); box.appendChild(btn); return box;
+}
+function recount(wrap){
+  if(wrap){
+    var n=0; wrap.querySelectorAll(".sin.on").forEach(function(){ n++; });
+    // include custom flags added via this section's input? they are not rows; keep row-based count
+    wrap.querySelector(".cmd-count").setAttribute("data-c", n);
+  }
+  updateCounts();
+}
+
+/* ===== review ===== */
+function renderReview(){
+  var host = el("reviewCards"); host.innerHTML="";
+  var empty = el("reviewEmpty");
+  var enterBtn = el("enterConfBtn"), clearBtn = el("clearListBtn");
+  var c = gravityCounts();
+  el("cTotal").textContent = c.total;
+  el("cMortal").textContent = c.mortal;
+  el("cVenial").textContent = c.venial;
+  el("cUnsure").textContent = c.unsure;
+
+  if(state.flags.length===0){
+    empty.style.display="block"; enterBtn.disabled=true; clearBtn.disabled=true; return;
+  }
+  empty.style.display="none"; enterBtn.disabled=false; clearBtn.disabled=false;
+
+  state.flags.forEach(function(f, idx){
+    var grave = isGrave(f.text), canGrave = isCanGrave(f.text);
+    var card = document.createElement("div");
+    card.className = "rev-card" + (f.gravity==="mortal"?" g-mortal":"");
+
+    var top = document.createElement("div"); top.className="rev-top";
+    var text = document.createElement("div"); text.className="rev-text"; text.textContent = f.text;
+    if(grave){ var gp=document.createElement("span"); gp.className="grave"; gp.textContent="grave matter"; text.appendChild(gp); }
+    else if(canGrave){ var cp=document.createElement("span"); cp.className="cangrave"; cp.textContent="can be grave"; text.appendChild(cp); }
+    var rm = document.createElement("button"); rm.className="rev-rm"; rm.setAttribute("aria-label","Remove");
+    rm.innerHTML='<svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+    rm.addEventListener("click", function(){
+      state.flags.splice(idx,1); saveState(); renderReview(); updateCounts();
+      if(el("view-examine").classList.contains("active")) buildExamine();
+    });
+    top.appendChild(text); top.appendChild(rm); card.appendChild(top);
+
+    // gravity chips
+    var row = document.createElement("div"); row.className="grav-row";
+    [["unsure","Unsure"],["venial","Venial"],["mortal","Mortal"]].forEach(function(pair){
+      var chip=document.createElement("button"); chip.className="grav-chip"+((f.gravity||"unsure")===pair[0]?" on":"");
+      chip.setAttribute("data-g",pair[0]); chip.textContent=pair[1];
+      chip.addEventListener("click", function(){
+        f.gravity = (pair[0]==="unsure") ? "" : pair[0];
+        saveState(); renderReview();
+      });
+      row.appendChild(chip);
+    });
+    card.appendChild(row);
+
+    if(grave || canGrave){
+      var hint=document.createElement("div"); hint.className="grave-hint"+(canGrave?" cg":"");
+      hint.innerHTML='<svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span></span>';
+      hint.querySelector("span").textContent = grave
+        ? "Grave matter. It is mortal only if you also knew it was seriously wrong and freely chose it."
+        : "This can be grave when the matter is serious. Weigh that, then knowledge and consent.";
+      card.appendChild(hint);
+
+      var wbtn=document.createElement("button"); wbtn.className="weigh-btn";
+      wbtn.innerHTML='<svg viewBox="0 0 24 24"><path d="M12 3v18M6 21h12M12 6l-8 3 2 5a3 3 0 0 0 4 0l2-5zM12 6l8 3-2 5a3 3 0 0 1-4 0l-2-5z"/></svg> Weigh knowledge and consent';
+      wbtn.addEventListener("click", function(){ openDiscernment(f, grave?"grave":"cangrave"); });
+      card.appendChild(wbtn);
+    }
+
+    // times committed
+    var crow=document.createElement("div"); crow.className="count-row";
+    var cl=document.createElement("span"); cl.className="cl"; cl.textContent="Times committed";
+    var stp=document.createElement("span"); stp.className="stepper";
+    var mn=document.createElement("button"); mn.className="st-btn"; mn.type="button"; mn.setAttribute("aria-label","One fewer"); mn.textContent="-";
+    var nn=document.createElement("span"); nn.className="st-n"; nn.textContent="x"+(f.count||1);
+    var pl=document.createElement("button"); pl.className="st-btn"; pl.type="button"; pl.setAttribute("aria-label","One more"); pl.textContent="+";
+    mn.addEventListener("click", function(){ if(f.count>1){ f.count--; nn.textContent="x"+f.count; saveState(); } });
+    pl.addEventListener("click", function(){ f.count=(f.count||1)+1; nn.textContent="x"+f.count; saveState(); });
+    stp.appendChild(mn); stp.appendChild(nn); stp.appendChild(pl);
+    crow.appendChild(cl); crow.appendChild(stp); card.appendChild(crow);
+
+    // note
+    var hasNote = !!(f.note && f.note.length);
+    var noteBtn=document.createElement("button"); noteBtn.className="note-toggle";
+    noteBtn.innerHTML='<svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/></svg> '+(hasNote?"Edit note":"Add a note");
+    var ta=document.createElement("textarea"); ta.className="note-field"; ta.rows=2; ta.placeholder="A private note to help you remember..."; ta.value=f.note||"";
+    ta.style.display = hasNote ? "block" : "none";
+    noteBtn.addEventListener("click", function(){
+      ta.style.display = (ta.style.display==="none") ? "block" : "none";
+      if(ta.style.display==="block") ta.focus();
+    });
+    ta.addEventListener("input", function(){ f.note = ta.value; saveState(); });
+    card.appendChild(noteBtn); card.appendChild(ta);
+
+    host.appendChild(card);
+  });
+}
+
+/* ===== prayers ===== */
+function renderPrayers(){
+  var host = el("prayerList"); host.innerHTML="";
+  PRAYERS.forEach(function(p){
+    var d=document.createElement("div"); d.className="prayer"+(p.parch?" parch":"");
+    d.innerHTML='<div class="p-tag"></div><div class="p-title"></div><div class="p-text"></div>';
+    d.querySelector(".p-tag").textContent=p.tag;
+    d.querySelector(".p-title").textContent=p.title;
+    d.querySelector(".p-text").textContent=p.text;
+    host.appendChild(d);
+  });
+}
+function renderRiteGreeting(){ var g=el("riteGreeting"); if(g) g.textContent = greetingLine(); }
+
+/* ===== during-confession ===== */
+var confStep = 0;
+function orderedFlags(){
+  var rank={ mortal:0, venial:1 };
+  return state.flags.slice().sort(function(a,b){
+    var ra=(a.gravity in rank)?rank[a.gravity]:2;
+    var rb=(b.gravity in rank)?rank[b.gravity]:2;
+    return ra-rb;
+  });
+}
+function confSteps(){
+  var recall;
+  var of = orderedFlags();
+  if(of.length){
+    var lis = of.map(function(){ return '<li></li>'; }).join("");
+    var anyMortal = of.some(function(f){ return f.gravity==="mortal"; });
+    var lead = anyMortal ? "Your private list - confess mortal sins first" : "Your private list";
+    recall = '<div class="conf-recall"><div class="r-lead">'+lead+'</div><ul id="confRecallList">'+lis+'</ul></div>';
+  } else {
+    recall = '<p class="conf-note">Speak them simply. Name mortal sins in kind and number as best you recall, beginning with what weighs most.</p>';
+  }
+  return [
+    { eyebrow:"Step 1 of 6 - Greet", say:greetingLine(), note:"Make the Sign of the Cross with the priest, then say this." },
+    { eyebrow:"Step 2 of 6 - Confess", say:"Now tell him your sins.", extra:recall },
+    { eyebrow:"Step 3 of 6 - Listen", say:"Receive his counsel and your penance.", note:"He may offer guidance, then give you a prayer or act to complete afterward." },
+    { eyebrow:"Step 4 of 6 - Contrition", say:"O my God, I am heartily sorry for having offended Thee, and I detest all my sins... I firmly resolve, with the help of Thy grace, to sin no more.", note:"Pray this, or use your own words of sorrow." },
+    { eyebrow:"Step 5 of 6 - Absolution", say:"...I absolve you from your sins in the name of the Father, and of the Son, and of the Holy Spirit.", note:"Answer 'Amen' and make the Sign of the Cross. Your sins are forgiven." },
+    { eyebrow:"Step 6 of 6 - Go in peace", say:"Give thanks to the Lord, for he is good.", note:"Answer: 'His mercy endures forever.' Then go, and complete your penance soon." }
+  ];
+}
+function renderConf(){
+  var steps = confSteps();
+  if(confStep<0) confStep=0;
+  if(confStep>steps.length-1) confStep=steps.length-1;
+  var s = steps[confStep];
+  var stage = el("confStage");
+  stage.innerHTML =
+    '<div class="conf-eyebrow">'+s.eyebrow+'</div>'+
+    '<div class="conf-say"></div>'+
+    (s.extra ? s.extra : (s.note ? '<p class="conf-note">'+s.note+'</p>' : ''));
+  stage.querySelector(".conf-say").textContent = s.say;
+  if(s.extra){
+    var ul = el("confRecallList");
+    if(ul){
+      var items = ul.querySelectorAll("li");
+      orderedFlags().forEach(function(f,i){
+        if(!items[i]) return;
+        var tag="";
+        if(f.gravity==="mortal") tag='<span class="tag m">Mortal</span>';
+        else if(f.gravity==="venial") tag='<span class="tag v">Venial</span>';
+        items[i].innerHTML = tag + '<span class="rcol"><span class="rtext"></span><span class="rnote"></span></span>';
+        var rt = items[i].querySelector(".rtext");
+        rt.textContent = f.text;
+        if(f.count && f.count>1){ var cs=document.createElement("span"); cs.className="cnt"; cs.textContent="x"+f.count; rt.appendChild(cs); }
+        var nt = items[i].querySelector(".rnote");
+        if(f.note && f.note.trim()){ nt.textContent = f.note; }
+        else { nt.style.display = "none"; }
+      });
+    }
+  }
+  var dots = el("confDots"); dots.innerHTML="";
+  for(var i=0;i<steps.length;i++){ var sp=document.createElement("span"); if(i===confStep) sp.className="on"; dots.appendChild(sp); }
+  var next = el("confNext");
+  el("confBack").disabled = (confStep===0);
+  if(confStep===steps.length-1){ next.innerHTML='<svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg> Mark complete'; }
+  else { next.textContent="Next"; }
+}
+
+/* ===== confession log ===== */
+function renderLog(){
+  var list = el("logList"); list.innerHTML="";
+  var empty = el("logEmpty");
+  el("logCount").textContent = state.history.length ? (state.history.length + (state.history.length===1?" logged":" logged")) : "";
+  if(state.history.length===0){ empty.style.display="block"; return; }
+  empty.style.display="none";
+  state.history.forEach(function(iso){
+    var li=document.createElement("li");
+    li.innerHTML='<span class="dot"></span><span class="l-date"></span><span class="l-rel"></span>'+
+      '<button class="l-rm" aria-label="Remove"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>';
+    li.querySelector(".l-date").textContent = prettyDate(iso);
+    li.querySelector(".l-rel").textContent = relPhrase(iso);
+    li.querySelector(".l-rm").addEventListener("click", function(){
+      state.history = state.history.filter(function(d){ return d!==iso; });
+      saveState(); renderLog(); renderStatus(); renderRiteGreeting();
+    });
+    list.appendChild(li);
+  });
+}
+function addConfessionDate(iso){
+  if(!iso) return;
+  state.history.push(iso);
+  state.history = dedupeSort(state.history);
+  saveState(); renderLog(); renderStatus(); renderRiteGreeting();
+}
+
+function renderStatus(){ el("statusMain").textContent = statusText(); }
+
+/* ===== navigation ===== */
+function go(view){
+  document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("active"); });
+  var target = el("view-"+view); if(target) target.classList.add("active");
+  document.querySelectorAll("#tabs button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-go")===view); });
+  window.scrollTo(0,0);
+  if(view==="examine") buildExamine();
+  if(view==="review") renderReview();
+  if(view==="rite"){ setRiteMode(currentRiteMode); renderRiteGreeting(); }
+  if(view==="settings"){ renderStatus(); renderLog(); renderSessionTog(); }
+}
+document.querySelectorAll("[data-go]").forEach(function(b){ b.addEventListener("click", function(){ go(b.getAttribute("data-go")); }); });
+el("statusCard").addEventListener("click", function(){ go("settings"); });
+el("btnSettings").addEventListener("click", function(){ go("settings"); });
+
+/* rite toggle */
+var currentRiteMode = "learn";
+function setRiteMode(mode){
+  currentRiteMode = mode;
+  document.querySelectorAll("#riteToggle button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-rite")===mode); });
+  el("riteLearn").style.display = (mode==="learn")?"block":"none";
+  el("riteDuring").style.display = (mode==="during")?"block":"none";
+  if(mode==="during"){ confStep=0; renderConf(); }
+  if(mode==="learn"){ renderRiteGreeting(); }
+}
+document.querySelectorAll("#riteToggle button").forEach(function(b){ b.addEventListener("click", function(){ setRiteMode(b.getAttribute("data-rite")); }); });
+el("enterConfBtn").addEventListener("click", function(){ go("rite"); setRiteMode("during"); });
+el("confBack").addEventListener("click", function(){ confStep--; renderConf(); });
+el("confNext").addEventListener("click", function(){
+  if(confStep >= confSteps().length-1) completeConfession();
+  else { confStep++; renderConf(); }
+});
+
+/* modal */
+var modalResolver=null;
+function ask(title,text,okLabel,danger){
+  el("modalTitle").textContent=title; el("modalText").textContent=text;
+  var ok=el("modalOk"); ok.textContent=okLabel||"Confirm"; ok.className="btn "+(danger?"btn-violet":"btn-gold");
+  el("modalBg").classList.add("show");
+  return new Promise(function(res){ modalResolver=res; });
+}
+el("modalOk").addEventListener("click", function(){ el("modalBg").classList.remove("show"); if(modalResolver) modalResolver(true); });
+el("modalCancel").addEventListener("click", function(){ el("modalBg").classList.remove("show"); if(modalResolver) modalResolver(false); });
+el("modalBg").addEventListener("click", function(e){ if(e.target===el("modalBg")){ el("modalBg").classList.remove("show"); if(modalResolver) modalResolver(false); } });
+
+function completeConfession(){
+  ask("Confession complete","Thanks be to God. Shall I add today to your confession log and clear your flagged list?","Yes, I'm done",false).then(function(ok){
+    if(ok){
+      addConfessionDate(todayISO());
+      state.flags=[]; saveState();
+      renderStatus(); updateCounts(); renderLog();
+      setRiteMode("learn"); go("home");
+    }
+  });
+}
+
+/* toast */
+var toastTimer=null;
+function toast(msg){
+  var t=el("toast"); if(!t) return;
+  t.textContent=msg; t.classList.add("show");
+  if(toastTimer) clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){ t.classList.remove("show"); }, 4600);
+}
+
+/* persistent storage - ask the browser not to evict our data */
+function setPersistStatus(state3){
+  var d=el("persistDesc"); if(!d) return;
+  if(state3===true) d.textContent="On - this browser has agreed to keep your data and not clear it to reclaim space.";
+  else if(state3===false) d.textContent="Limited - this browser may clear on-device data after a period away (notably iPhone Safari). Export a backup now and then to be safe.";
+  else d.textContent="Unknown - this browser does not report storage protection. Export a backup now and then to be safe.";
+}
+function requestPersist(){
+  try{
+    if(navigator.storage && navigator.storage.persist){
+      var p = (navigator.storage.persisted ? navigator.storage.persisted() : Promise.resolve(false));
+      p.then(function(already){
+        if(already){ setPersistStatus(true); return; }
+        navigator.storage.persist().then(function(granted){ setPersistStatus(!!granted); }).catch(function(){ setPersistStatus(null); });
+      }).catch(function(){ setPersistStatus(null); });
+    } else { setPersistStatus(null); }
+  }catch(e){ setPersistStatus(null); }
+}
+
+/* backup export / import - an encrypted copy the user holds themselves */
+function cryptoReady(){ return !!(window.crypto && crypto.subtle && crypto.getRandomValues); }
+function toB64(buf){ var b=new Uint8Array(buf), s=""; for(var i=0;i<b.length;i++) s+=String.fromCharCode(b[i]); return btoa(s); }
+function fromB64(str){ var s=atob(str), b=new Uint8Array(s.length); for(var i=0;i<s.length;i++) b[i]=s.charCodeAt(i); return b; }
+function deriveKey(pass, salt, iter){
+  var baseKey = crypto.subtle.importKey("raw", new TextEncoder().encode(pass), {name:"PBKDF2"}, false, ["deriveKey"]);
+  return baseKey.then(function(bk){
+    return crypto.subtle.deriveKey({name:"PBKDF2", salt:salt, iterations:iter, hash:"SHA-256"}, bk, {name:"AES-GCM", length:256}, false, ["encrypt","decrypt"]);
+  });
+}
+function downloadJSON(obj, name){
+  var blob = new Blob([JSON.stringify(obj,null,2)], { type:"application/json" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a"); a.href=url; a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+}
+function exportBackup(){
+  if(!cryptoReady()){ toast("Secure encryption is not available in this browser, so no backup was made."); return; }
+  promptPassphrase({ title:"Protect your backup", text:"Choose a password. The file will be encrypted with it, and it cannot be opened or recovered without it.", confirm:true, okLabel:"Encrypt and download" }).then(function(pass){
+    if(!pass) return;
+    var payload = { app:"confiteor", v:2, exported:new Date().toISOString(), history:state.history, flags:state.flags };
+    var salt = crypto.getRandomValues(new Uint8Array(16));
+    var iv = crypto.getRandomValues(new Uint8Array(12));
+    var iter = 210000;
+    deriveKey(pass, salt, iter).then(function(key){
+      return crypto.subtle.encrypt({name:"AES-GCM", iv:iv}, key, new TextEncoder().encode(JSON.stringify(payload)));
+    }).then(function(ct){
+      downloadJSON({ app:"confiteor", format:"encrypted", enc:"AES-GCM", kdf:"PBKDF2", hash:"SHA-256", iter:iter, salt:toB64(salt), iv:toB64(iv), ct:toB64(ct) }, "confiteor-backup-"+todayISO()+".json");
+      toast("Encrypted backup downloaded. Keep the password safe - it is the only key.");
+    }).catch(function(){ toast("Could not encrypt the backup in this browser."); });
+  });
+}
+function importBackup(file){
+  var reader = new FileReader();
+  reader.onload = function(){
+    var data;
+    try{ data = JSON.parse(reader.result); }catch(e){ toast("That file could not be read as a Confiteor backup."); return; }
+    if(data && data.format==="encrypted" && data.ct){
+      if(!cryptoReady()){ toast("This browser cannot open an encrypted backup."); return; }
+      promptPassphrase({ title:"Unlock backup", text:"Enter the password for this backup file.", confirm:false, okLabel:"Unlock and restore" }).then(function(pass){
+        if(!pass) return;
+        var salt, iv, ct;
+        try{ salt=fromB64(data.salt); iv=fromB64(data.iv); ct=fromB64(data.ct); }catch(e){ toast("That backup file is damaged."); return; }
+        deriveKey(pass, salt, data.iter||210000).then(function(key){
+          return crypto.subtle.decrypt({name:"AES-GCM", iv:iv}, key, ct);
+        }).then(function(pt){
+          var inner; try{ inner = JSON.parse(new TextDecoder().decode(pt)); }catch(e){ toast("That backup file is damaged."); return; }
+          mergeImported(inner);
+        }).catch(function(){ toast("Wrong password, or the file is damaged."); });
+      });
+      return;
+    }
+    mergeImported(data); // plain (older) backup
+  };
+  reader.onerror = function(){ toast("That file could not be read."); };
+  reader.readAsText(file);
+}
+function mergeImported(data){
+  if(!data || (!Array.isArray(data.history) && !Array.isArray(data.flags))){ toast("That does not look like a Confiteor backup."); return; }
+  var addH=0, addF=0;
+  if(Array.isArray(data.history)){
+    data.history.forEach(function(d){ if(typeof d==="string" && state.history.indexOf(d)===-1){ state.history.push(d); addH++; } });
+    state.history = dedupeSort(state.history);
+  }
+  if(Array.isArray(data.flags)){
+    data.flags.forEach(function(f){
+      var t = (typeof f==="string") ? f : (f && f.text);
+      if(!t || flagIndex(t)!==-1) return;
+      state.flags.push({ text:t, note:(f&&f.note)||"", gravity:(f&&f.gravity)||"", count:(f&&f.count>=1)?f.count:1, serious:(f&&f.serious)||"", knowledge:(f&&f.knowledge)||"", consent:(f&&f.consent)||"" });
+      addF++;
+    });
+  }
+  saveState();
+  renderStatus(); renderLog(); updateCounts();
+  if(el("view-review").classList.contains("active")) renderReview();
+  if(el("view-examine").classList.contains("active")) buildExamine();
+  toast("Backup merged - added "+addF+" flagged and "+addH+" log "+(addH===1?"entry":"entries")+". Nothing was removed.");
+}
+el("exportBtn").addEventListener("click", exportBackup);
+el("importBtn").addEventListener("click", function(){ el("importFile").click(); });
+el("importFile").addEventListener("change", function(){
+  if(this.files && this.files[0]) importBackup(this.files[0]);
+  this.value = "";
+});
+
+/* passphrase prompt */
+var ppResolver=null, ppConfirmMode=false;
+function promptPassphrase(opts){
+  el("ppTitle").textContent = opts.title||"Password";
+  el("ppText").textContent = opts.text||"";
+  el("ppOk").textContent = opts.okLabel||"Confirm";
+  ppConfirmMode = !!opts.confirm;
+  var i1=el("ppInput1"), i2=el("ppInput2");
+  i1.value=""; i2.value=""; i1.type="password"; i2.type="password";
+  i2.style.display = ppConfirmMode ? "block" : "none";
+  el("ppShow").checked=false; el("ppErr").textContent="";
+  el("ppBg").classList.add("show");
+  setTimeout(function(){ i1.focus(); }, 60);
+  return new Promise(function(res){ ppResolver=res; });
+}
+function ppClose(val){ el("ppBg").classList.remove("show"); var r=ppResolver; ppResolver=null; if(r) r(val); }
+el("ppShow").addEventListener("change", function(){ var t=this.checked?"text":"password"; el("ppInput1").type=t; el("ppInput2").type=t; });
+el("ppCancel").addEventListener("click", function(){ ppClose(null); });
+el("ppBg").addEventListener("click", function(e){ if(e.target===el("ppBg")) ppClose(null); });
+el("ppOk").addEventListener("click", function(){
+  var p1=el("ppInput1").value, p2=el("ppInput2").value;
+  if(!p1 || p1.length<4){ el("ppErr").textContent="Use at least 4 characters."; return; }
+  if(ppConfirmMode && p1!==p2){ el("ppErr").textContent="The passwords do not match."; return; }
+  ppClose(p1);
+});
+el("ppInput1").addEventListener("keydown", function(e){ if(e.key==="Enter"){ if(ppConfirmMode) el("ppInput2").focus(); else el("ppOk").click(); } });
+el("ppInput2").addEventListener("keydown", function(e){ if(e.key==="Enter") el("ppOk").click(); });
+
+/* discernment - grave matter joined to full knowledge and deliberate consent */
+var discFlag=null, discKind="grave";
+function openDiscernment(flag, kind){
+  discFlag=flag; discKind=kind;
+  el("discSin").textContent=flag.text;
+  var tl=el("discTagline");
+  if(kind==="grave"){ tl.className="disc-tagline grave"; tl.textContent="Grave matter"; }
+  else { tl.className="disc-tagline cangrave"; tl.textContent="Can be grave matter"; }
+  renderDisc();
+  el("discBg").classList.add("show");
+}
+function ynBlock(id, lead, hint, val){
+  return '<div class="disc-q"><div class="q-lead">'+lead+'</div><div class="q-hint">'+hint+'</div>'+
+    '<div class="disc-yn" data-q="'+id+'">'+
+      '<button class="yes'+(val==="yes"?" on":"")+'" data-v="yes" type="button">Yes</button>'+
+      '<button class="no'+(val==="no"?" on":"")+'" data-v="no" type="button">No</button>'+
+    '</div></div>';
+}
+function computeVerdict(){
+  if(discKind==="cangrave"){
+    if(discFlag.serious==="no") return "venial";
+    if(discFlag.serious==="yes" && discFlag.knowledge && discFlag.consent){
+      return (discFlag.knowledge==="yes" && discFlag.consent==="yes") ? "mortal" : "venial";
+    }
+    return "";
+  }
+  if(discFlag.knowledge && discFlag.consent){
+    return (discFlag.knowledge==="yes" && discFlag.consent==="yes") ? "mortal" : "venial";
+  }
+  return "";
+}
+function renderDisc(){
+  var body=el("discBody"); var html="";
+  if(discKind==="cangrave"){
+    html += ynBlock("serious","Was the matter serious in this case?","Some sins are grave only when the matter is serious - a large amount, real harm, or a complete act.", discFlag.serious);
+    if(discFlag.serious==="yes"){
+      html += ynBlock("knowledge","Was it committed with full knowledge?","You must know that the action itself is seriously wrong.", discFlag.knowledge);
+      html += ynBlock("consent","Was there deliberate consent?","You must freely and consciously choose to commit the act anyway.", discFlag.consent);
+    }
+  } else {
+    html += ynBlock("knowledge","Was it committed with full knowledge?","You must know that the action itself is seriously wrong.", discFlag.knowledge);
+    html += ynBlock("consent","Was there deliberate consent?","You must freely and consciously choose to commit the act anyway.", discFlag.consent);
+  }
+  body.innerHTML=html;
+  body.querySelectorAll(".disc-yn").forEach(function(grp){
+    var q=grp.getAttribute("data-q");
+    grp.querySelectorAll("button").forEach(function(b){
+      b.addEventListener("click", function(){
+        var v=b.getAttribute("data-v");
+        discFlag[q] = (discFlag[q]===v) ? "" : v;
+        renderDisc();
+      });
+    });
+  });
+  var verdict=computeVerdict();
+  var vEl=el("discVerdict");
+  if(verdict==="mortal"){ vEl.className="disc-verdict mortal"; vEl.textContent="By these conditions, this may be a mortal sin."; }
+  else if(verdict==="venial"){ vEl.className="disc-verdict venial"; vEl.textContent="By these conditions, this is a venial sin."; }
+  else { vEl.className="disc-verdict"; vEl.textContent="Answer to see how it weighs."; }
+}
+function discClose(apply){
+  if(discFlag){
+    if(apply){
+      var v=computeVerdict();
+      if(v==="mortal") discFlag.gravity="mortal";
+      else if(v==="venial") discFlag.gravity="venial";
+    }
+    saveState(); updateCounts();
+    if(el("view-review").classList.contains("active")) renderReview();
+  }
+  el("discBg").classList.remove("show"); discFlag=null;
+}
+el("discSave").addEventListener("click", function(){ discClose(true); });
+el("discLater").addEventListener("click", function(){ discClose(false); });
+el("discBg").addEventListener("click", function(e){ if(e.target===el("discBg")) discClose(false); });
+
+
+/* settings actions */
+el("logAddBtn").addEventListener("click", function(){
+  var v = el("logDateInput").value;
+  if(v){ addConfessionDate(v); el("logDateInput").value=""; }
+});
+el("setClearList").addEventListener("click", function(){
+  ask("Clear your list","This removes everything you have flagged and noted. This cannot be undone.","Clear",true).then(function(ok){
+    if(ok){ state.flags=[]; saveState(); updateCounts(); renderReview(); if(el("view-examine").classList.contains("active")) buildExamine(); }
+  });
+});
+el("clearListBtn").addEventListener("click", function(){
+  ask("Clear your list","This removes everything you have flagged and noted. This cannot be undone.","Clear",true).then(function(ok){
+    if(ok){ state.flags=[]; saveState(); updateCounts(); renderReview(); }
+  });
+});
+el("setResetAll").addEventListener("click", function(){
+  ask("Reset everything","This clears your flagged list and your entire confession log.","Reset",true).then(function(ok){
+    if(ok){ state.flags=[]; state.history=[]; saveState(); renderStatus(); updateCounts(); renderReview(); renderLog(); }
+  });
+});
+
+function renderSessionTog(){ el("sessionTog").classList.toggle("on", !!state.sessionOnly); }
+el("sessionTog").addEventListener("click", function(){
+  if(!state.sessionOnly){
+    ask("Forget notes on close?","With this on, your flagged list is wiped every time you close the app. Your confession log is kept. Turn this on?","Turn on",true).then(function(ok){
+      if(ok){ state.sessionOnly=true; saveState(); renderSessionTog(); }
+    });
+  } else {
+    state.sessionOnly=false; saveState(); renderSessionTog();
+  }
+});
+
+window.addEventListener("pagehide", function(){
+  if(state.sessionOnly){ writeStore(FLAGKEY, FLAGBAK, { flags:[], sessionOnly:true, v:3 }); }
+});
+
+/* init */
+requestPersist();
+renderStatus();
+renderPrayers();
+renderLog();
+renderSessionTog();
+updateCounts();
+renderRiteGreeting();
+</script>
+</body>
+</html>
