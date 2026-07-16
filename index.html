@@ -336,6 +336,14 @@
   .disc-verdict.venial{color:var(--venial);font-style:normal;}
   .conf-recall li .cnt{font-family:'Inter';font-size:12px;font-weight:600;color:var(--gold-dim);margin-left:7px;}
 
+  .conf-say.long{font-size:clamp(18px,4.6vw,22px);line-height:1.5;}
+  .pref-btn{width:100%;margin-top:16px;background:rgba(200,164,90,.08);border:1px solid var(--gold-dim);color:var(--gold-soft);font-family:'Inter';font-size:13px;font-weight:600;padding:11px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .pref-btn:hover{border-color:var(--gold);}
+  .pref-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;}
+  .pref-btn.on{background:var(--gold);border-color:var(--gold);color:var(--void);}
+  .prayer.parch .pref-btn{background:rgba(107,78,38,.08);border-color:#b09256;color:#6b4e26;}
+  .prayer.parch .pref-btn.on{background:#6b4e26;border-color:#6b4e26;color:#e9dcc2;}
+
   @media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important;}}
 </style>
 </head>
@@ -487,7 +495,7 @@
           <div class="step"><span class="s-num"></span><div class="s-body"><h3>Greet the priest</h3><p>Make the Sign of the Cross with him, then open with the traditional greeting.</p><div class="say" id="riteGreeting">Bless me, Father, for I have sinned. It has been ___ since my last confession.</div></div></div>
           <div class="step"><span class="s-num"></span><div class="s-body"><h3>Confess your sins</h3><p>Tell him your sins simply and honestly. Name mortal sins in kind and number as best you recall. Start with what weighs most.</p></div></div>
           <div class="step"><span class="s-num"></span><div class="s-body"><h3>Listen and receive your penance</h3><p>The priest may offer a word of counsel, then give you a penance - usually a prayer or an act to complete afterward.</p></div></div>
-          <div class="step"><span class="s-num"></span><div class="s-body"><h3>Pray the Act of Contrition</h3><p>When he asks, express your sorrow. You may use your own words or a traditional prayer.</p><div class="say">O my God, I am heartily sorry for having offended Thee...</div></div></div>
+          <div class="step"><span class="s-num"></span><div class="s-body"><h3>Pray the Act of Contrition</h3><p>When he asks, express your sorrow. You may use your own words or a traditional prayer.</p><div class="say" id="riteContrition">O my God, I am heartily sorry for having offended Thee...</div></div></div>
           <div class="step"><span class="s-num"></span><div class="s-body"><h3>Receive absolution</h3><p>The priest extends his hand and absolves you in the name of the Father, and of the Son, and of the Holy Spirit. Answer "Amen" and make the Sign of the Cross.</p></div></div>
           <div class="step"><span class="s-num"></span><div class="s-body"><h3>Give thanks, then do your penance</h3><p>He will dismiss you: "Give thanks to the Lord, for he is good." Answer: "His mercy endures forever." Leave in peace and complete your penance soon.</p></div></div>
         </div>
@@ -885,9 +893,9 @@ function sinInfo(t){ return SIN_INFO[t] || ""; }
 
 var PRAYERS = [
   { title:"Prayer Before Confession", tag:"To begin", parch:false, text:"Come, Holy Spirit, enlighten my mind that I may know my sins, and move my heart that I may be truly sorry for them. Help me to confess them honestly and completely, and to resolve, with your grace, to sin no more. Mary, Mother of Mercy, pray for me. Amen." },
-  { title:"Act of Contrition", tag:"Traditional", parch:true, text:"O my God, I am heartily sorry for having offended Thee, and I detest all my sins because of Thy just punishments, but most of all because they offend Thee, my God, who art all good and deserving of all my love. I firmly resolve, with the help of Thy grace, to sin no more and to avoid the near occasions of sin. Amen." },
-  { title:"Act of Contrition", tag:"Contemporary", parch:false, text:"My God, I am sorry for my sins with all my heart. In choosing to do wrong and failing to do good, I have sinned against you, whom I should love above all things. I firmly intend, with your help, to do penance, to sin no more, and to avoid whatever leads me to sin. Our Savior Jesus Christ suffered and died for us. In his name, my God, have mercy. Amen." },
-  { title:"Act of Contrition", tag:"Short form", parch:true, text:"Lord Jesus, have mercy on me, a sinner." },
+  { title:"Act of Contrition", tag:"Traditional", parch:true, act:"traditional", text:"O my God, I am heartily sorry for having offended Thee, and I detest all my sins because of Thy just punishments, but most of all because they offend Thee, my God, who art all good and deserving of all my love. I firmly resolve, with the help of Thy grace, to sin no more and to avoid the near occasions of sin. Amen." },
+  { title:"Act of Contrition", tag:"Contemporary", parch:false, act:"contemporary", text:"My God, I am sorry for my sins with all my heart. In choosing to do wrong and failing to do good, I have sinned against you, whom I should love above all things. I firmly intend, with your help, to do penance, to sin no more, and to avoid whatever leads me to sin. Our Savior Jesus Christ suffered and died for us. In his name, my God, have mercy. Amen." },
+  { title:"Act of Contrition", tag:"Short form", parch:true, act:"short", text:"Lord Jesus, have mercy on me, a sinner." },
   { title:"The Confiteor", tag:"I confess", parch:false, text:"I confess to almighty God and to you, my brothers and sisters, that I have greatly sinned, in my thoughts and in my words, in what I have done and in what I have failed to do, through my fault, through my fault, through my most grievous fault; therefore I ask blessed Mary ever-Virgin, all the Angels and Saints, and you, my brothers and sisters, to pray for me to the Lord our God. Amen." },
   { title:"Prayer After Confession", tag:"Thanksgiving", parch:false, text:"Lord Jesus, you have washed me clean and set me free. Thank you for the gift of your mercy. Help me to keep the resolutions I have made, to make amends where I can, and to walk from here in the freedom of your children. Give me the grace to love you more each day, and to sin no more. Amen." },
   { title:"Psalm 51", tag:"The Miserere", parch:true, text:"Have mercy on me, O God, according to thy great mercy. And according to the multitude of thy tender mercies, blot out my iniquity. Wash me yet more from my iniquity, and cleanse me from my sin. A clean heart create in me, O God, and renew a right spirit within me. Cast me not away from thy face, and take not thy holy spirit from me." }
@@ -896,7 +904,8 @@ var PRAYERS = [
 /* ===== state ===== */
 var FLAGKEY="confiteor_flags_v3", FLAGBAK="confiteor_flags_v3_bak";
 var LOGKEY="confiteor_log_v3", LOGBAK="confiteor_log_v3_bak";
-function blank(){ return { history:[], flags:[], sessionOnly:false }; }
+var PREFKEY="confiteor_prefs_v3", PREFBAK="confiteor_prefs_v3_bak";
+function blank(){ return { history:[], flags:[], sessionOnly:false, contrition:"traditional" }; }
 function normalizeFlags(arr){
   if(!Array.isArray(arr)) return [];
   return arr.map(function(f){
@@ -909,6 +918,7 @@ function normalize(s){
   s.flags = normalizeFlags(s.flags);
   s.history = dedupeSort(Array.isArray(s.history)?s.history:[]);
   s.sessionOnly = !!s.sessionOnly;
+  if(["traditional","contemporary","short"].indexOf(s.contrition)===-1) s.contrition = "traditional";
   return s;
 }
 function readStore(key, bak){
@@ -932,6 +942,8 @@ function loadState(){
   }
   if(flagsObj){ s.flags=flagsObj.flags||[]; s.sessionOnly=!!flagsObj.sessionOnly; }
   if(logObj){ s.history=logObj.history||[]; }
+  var pr = readStore(PREFKEY, PREFBAK);
+  if(pr.obj && pr.obj.contrition) s.contrition = pr.obj.contrition;
   if(fr.corrupt || lr.corrupt){
     try{ if(fr.raw) localStorage.setItem(FLAGKEY+"_recovered_"+Date.now(), fr.raw); if(lr.raw) localStorage.setItem(LOGKEY+"_recovered_"+Date.now(), lr.raw); }catch(e){}
     toast("Some saved data looked damaged. A copy was set aside - restore from a backup file if you have one.");
@@ -948,6 +960,7 @@ function writeStore(key, bak, obj){
 function saveState(){
   var okF = writeStore(FLAGKEY, FLAGBAK, { flags: state.sessionOnly?[]:state.flags, sessionOnly:state.sessionOnly, v:3 });
   var okL = writeStore(LOGKEY, LOGBAK, { history:state.history, v:3 });
+  writeStore(PREFKEY, PREFBAK, { contrition:state.contrition, v:3 });
   if(okF && okL){ saveFailNotified=false; }
   else if(!saveFailNotified){ saveFailNotified=true; toast("Couldn't save to this device - storage may be full or blocked. Export a backup to keep your list safe."); }
 }
@@ -1233,6 +1246,12 @@ function renderReview(){
 }
 
 /* ===== prayers ===== */
+function actPrayer(){
+  var want = state.contrition || "traditional";
+  for(var i=0;i<PRAYERS.length;i++){ if(PRAYERS[i].act===want) return PRAYERS[i]; }
+  for(var j=0;j<PRAYERS.length;j++){ if(PRAYERS[j].act==="traditional") return PRAYERS[j]; }
+  return null;
+}
 function renderPrayers(){
   var host = el("prayerList"); host.innerHTML="";
   PRAYERS.forEach(function(p){
@@ -1241,10 +1260,26 @@ function renderPrayers(){
     d.querySelector(".p-tag").textContent=p.tag;
     d.querySelector(".p-title").textContent=p.title;
     d.querySelector(".p-text").textContent=p.text;
+    if(p.act){
+      var on = (state.contrition===p.act);
+      var b=document.createElement("button"); b.className="pref-btn"+(on?" on":""); b.type="button";
+      b.innerHTML = on
+        ? '<svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg> Used in the confessional'
+        : '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></svg> Use this in the confessional';
+      b.addEventListener("click", function(){
+        state.contrition = p.act; saveState(); renderPrayers(); renderRiteContrition();
+        toast("The " + p.tag.toLowerCase() + " Act of Contrition will show in the confessional.");
+      });
+      d.appendChild(b);
+    }
     host.appendChild(d);
   });
 }
 function renderRiteGreeting(){ var g=el("riteGreeting"); if(g) g.textContent = greetingLine(); }
+function renderRiteContrition(){
+  var c=el("riteContrition"); if(!c) return;
+  var p=actPrayer(); if(p) c.textContent=p.text;
+}
 
 /* ===== during-confession ===== */
 var confStep = 0;
@@ -1271,7 +1306,7 @@ function confSteps(){
     { eyebrow:"Step 1 of 6 - Greet", say:greetingLine(), note:"Make the Sign of the Cross with the priest, then say this." },
     { eyebrow:"Step 2 of 6 - Confess", say:"Now tell him your sins.", extra:recall },
     { eyebrow:"Step 3 of 6 - Listen", say:"Receive his counsel and your penance.", note:"He may offer guidance, then give you a prayer or act to complete afterward." },
-    { eyebrow:"Step 4 of 6 - Contrition", say:"O my God, I am heartily sorry for having offended Thee, and I detest all my sins... I firmly resolve, with the help of Thy grace, to sin no more.", note:"Pray this, or use your own words of sorrow." },
+    { eyebrow:"Step 4 of 6 - Contrition", say:(actPrayer()?actPrayer().text:""), note:"Pray this, or use your own words of sorrow.", long:true },
     { eyebrow:"Step 5 of 6 - Absolution", say:"...I absolve you from your sins in the name of the Father, and of the Son, and of the Holy Spirit.", note:"Answer 'Amen' and make the Sign of the Cross. Your sins are forgiven." },
     { eyebrow:"Step 6 of 6 - Go in peace", say:"Give thanks to the Lord, for he is good.", note:"Answer: 'His mercy endures forever.' Then go, and complete your penance soon." }
   ];
@@ -1284,7 +1319,7 @@ function renderConf(){
   var stage = el("confStage");
   stage.innerHTML =
     '<div class="conf-eyebrow">'+s.eyebrow+'</div>'+
-    '<div class="conf-say"></div>'+
+    '<div class="conf-say'+(s.long?' long':'')+'"></div>'+
     (s.extra ? s.extra : (s.note ? '<p class="conf-note">'+s.note+'</p>' : ''));
   stage.querySelector(".conf-say").textContent = s.say;
   if(s.extra){
@@ -1352,7 +1387,7 @@ function go(view){
   window.scrollTo(0,0);
   if(view==="examine") buildExamine();
   if(view==="review") renderReview();
-  if(view==="rite"){ setRiteMode(currentRiteMode); renderRiteGreeting(); }
+  if(view==="rite"){ setRiteMode(currentRiteMode); renderRiteGreeting(); renderRiteContrition(); }
   if(view==="settings"){ renderStatus(); renderLog(); renderSessionTog(); }
 }
 document.querySelectorAll("[data-go]").forEach(function(b){ b.addEventListener("click", function(){ go(b.getAttribute("data-go")); }); });
@@ -1367,7 +1402,7 @@ function setRiteMode(mode){
   el("riteLearn").style.display = (mode==="learn")?"block":"none";
   el("riteDuring").style.display = (mode==="during")?"block":"none";
   if(mode==="during"){ confStep=0; renderConf(); }
-  if(mode==="learn"){ renderRiteGreeting(); }
+  if(mode==="learn"){ renderRiteGreeting(); renderRiteContrition(); }
 }
 document.querySelectorAll("#riteToggle button").forEach(function(b){ b.addEventListener("click", function(){ setRiteMode(b.getAttribute("data-rite")); }); });
 el("enterConfBtn").addEventListener("click", function(){ go("rite"); setRiteMode("during"); });
@@ -1672,6 +1707,7 @@ renderLog();
 renderSessionTog();
 updateCounts();
 renderRiteGreeting();
+renderRiteContrition();
 </script>
 </body>
 </html>
