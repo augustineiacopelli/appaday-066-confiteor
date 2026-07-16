@@ -228,9 +228,10 @@
   .conf-recall li .rtext::first-letter{text-transform:uppercase;}
   .conf-recall li .rcol{flex:1;min-width:0;}
   .conf-recall li .rnote{display:block;font-family:'Inter';font-size:13px;color:var(--muted);margin-top:4px;line-height:1.45;}
-  .conf-recall li .tag{font-family:'Inter';font-size:9.5px;font-weight:700;letter-spacing:.06em;padding:2px 6px;border-radius:4px;flex-shrink:0;margin-top:2px;}
+  .conf-recall li .tag{font-family:'Inter';font-size:9.5px;font-weight:700;letter-spacing:.06em;padding:2px 6px;border-radius:4px;flex-shrink:0;margin-top:2px;width:62px;text-align:center;box-sizing:border-box;}
   .conf-recall li .tag.m{color:var(--mortal);border:1px solid var(--mortal-deep);}
   .conf-recall li .tag.v{color:var(--venial);border:1px solid var(--gold-dim);}
+  .conf-recall li .tag.u{color:var(--faint);border:1px dashed var(--line);}
   .conf-nav{display:flex;gap:10px;margin-top:26px;}
   .conf-nav .btn{flex:1;}
 
@@ -297,6 +298,13 @@
   .sin .s-text{flex:1;}
   .sin-xn{display:none;flex-shrink:0;font-family:'Inter';font-size:12px;font-weight:600;color:var(--violet);background:rgba(138,115,158,.16);border-radius:20px;padding:2px 8px;margin-top:1px;}
   .sin-detail{display:none;padding:2px 10px 12px 46px;}
+  .sin-info{flex-shrink:0;width:28px;height:28px;border-radius:50%;border:none;background:none;color:var(--faint);cursor:pointer;display:grid;place-items:center;margin-top:-2px;}
+  .sin-info:hover{color:var(--gold);}
+  .sin-info svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;}
+  .info-eyebrow{font-family:'Inter';font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:8px;}
+  .info-title{font-family:'EB Garamond';font-size:19px;color:var(--gold-soft);line-height:1.35;margin-bottom:12px;}
+  .info-title::first-letter{text-transform:uppercase;}
+  .info-text{font-family:'EB Garamond';font-size:16.5px;line-height:1.55;color:var(--ivory);margin-bottom:20px;}
   @media (max-width:400px){ .sin-detail{padding-left:38px;} }
   .cangrave{display:inline-block;font-family:'Inter';font-size:9.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--gold-soft);border:1px solid var(--gold-dim);background:rgba(200,164,90,.08);border-radius:4px;padding:2px 6px;margin-left:8px;vertical-align:middle;white-space:nowrap;}
   .stepper{display:none;align-items:center;gap:3px;flex-shrink:0;margin-top:-1px;}
@@ -339,8 +347,8 @@
     <button class="icon-btn" id="btnSettings" aria-label="Settings" title="Settings">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
-    <a class="icon-btn" href="https://augustineiacopelli.github.io/appaday/" aria-label="Back to AppADay portfolio" title="AppADay">
-      <svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>
+    <a class="icon-btn" href="https://augustineiacopelli.github.io/appaday/" aria-label="Back to AppADay portfolio" title="AppADay portfolio">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.6"/></svg>
     </a>
   </div>
 </header>
@@ -614,6 +622,15 @@
   </div>
 </div>
 
+<div class="modal-bg" id="infoBg">
+  <div class="modal">
+    <div class="info-eyebrow">What this means</div>
+    <div class="info-title" id="infoTitle"></div>
+    <div class="info-text" id="infoText"></div>
+    <div class="m-actions"><button class="btn btn-gold" id="infoClose">Got it</button></div>
+  </div>
+</div>
+
 <script>
 "use strict";
 
@@ -731,6 +748,140 @@ var CANGRAVE = {};
   "guilty of greed or avarice"
 ].forEach(function(s){ CANGRAVE[s] = true; });
 function isCanGrave(t){ return !isGrave(t) && !!CANGRAVE[t]; }
+
+/* Plain-language explanation of what each sin means, to help discern the vaguer ones. */
+var SIN_INFO = {
+"guilty of simony, buying or selling blessed and Holy items":"Simony is treating sacred things as merchandise - buying or selling blessings, sacraments, relics, or spiritual offices as if they were ordinary goods.",
+"ignorant of basic catechism: Act of Contrition, Apostles' Creed, the Ten Commandments, the Seven Sacraments":"Neglecting to learn the basics of the faith you are responsible for knowing - the core prayers, creed, commandments, and sacraments.",
+"believed in fortune telling, horoscopes, the occult, charms, tarot cards, seances, or other occult practices":"Seeking hidden knowledge or power apart from God - divination, mediums, spells, or the occult - instead of trusting His providence.",
+"caused someone to leave the Catholic Faith":"By your words, example, or pressure, leading another person away from the faith or its practice.",
+"claims good values but bends or abandons them to fit in with a group":"Setting aside your convictions to gain approval - going along with a group against what you know to be right.",
+"denied being Catholic":"Concealing or disowning your faith out of fear or shame when it should be acknowledged.",
+"did not love God with my whole heart":"Holding back from God - giving Him a divided or lukewarm love rather than first place in your heart.",
+"did not truly love God above all, gave greater importance to things of this world":"Letting created things - success, money, comfort, people - matter more to you than God.",
+"uses religion to look like a good Christian rather than wanting to be transformed by God's will":"Practicing faith for appearances or reputation rather than to be genuinely changed by God.",
+"failed to give time to God each day in prayer":"Neglecting daily prayer - not setting aside real time to be with God.",
+"failed to receive Holy Communion at least once a year, especially during Easter":"Neglecting the Church's precept to receive Communion at least once a year, during the Easter season (the Easter duty).",
+"denied or doubted that God exists":"Willfully denying God's existence, or nursing serious doubt rather than seeking to resolve it in good faith.",
+"hated God":"Turning actual hatred toward God - resenting or despising Him, as distinct from a passing feeling of anger.",
+"has false gods given greater attention than God: money, profession, drugs, TV, fame, pleasure":"Making something other than God the center of your life - money, career, fame, pleasure, or a habit that rules you.",
+"knowingly read anti-Catholic literature":"Deliberately taking in material meant to attack the faith in a way that endangers your own belief.",
+"took an active part in a non-Catholic worship":"Actively participating in another religion's worship in a way that compromises the Catholic faith.",
+"willfully doubted or denied the teachings of the Church, heresy":"Knowingly rejecting or obstinately doubting a defined teaching of the Church (heresy), as opposed to honest questions asked in good faith.",
+"left the Catholic Faith":"Formally abandoning the Catholic faith (apostasy).",
+"received communion in the state of mortal sin":"Receiving the Eucharist while aware of unconfessed mortal sin, without first going to confession (a sacrilege).",
+"refused to believe what God has revealed to us":"Rejecting what God has revealed and the Church hands on, withholding the assent of faith.",
+"involved in the New Age Movement, Eastern religions, atheism, or agnosticism":"Adopting beliefs or practices at odds with the faith - New Age spirituality, non-Christian systems, or settled atheism or agnosticism.",
+"cursed or broke an oath or vow":"Calling down evil on someone or something, or failing to keep a solemn oath or vow made before God.",
+"disrespected God's name by misusing it out of frustration, anger, or to look tough":"Using God's name as an outburst of anger or to seem impressive, emptying it of reverence.",
+"got angry with God":"Turning anger toward God - blaming or railing against Him rather than bringing your struggles to Him honestly.",
+"broke a private vow":"Failing to keep a promise made privately to God, such as a personal resolution or pledge.",
+"murmured or complained against God, blasphemy":"Speaking against God with contempt, or complaining against Him in a way that denies His goodness (blasphemy).",
+"hesitated to mention God's name in appropriate situations with friends and family":"Being reluctant to speak of God when you naturally could, out of human respect.",
+"lied under oath":"Swearing to the truth of something you know to be false (perjury).",
+"maligned priests or others consecrated to God":"Speaking ill of priests, religious, or others consecrated to God, harming their good name.",
+"slandered or insulted a sacred person or object":"Treating a sacred person, place, or object with contempt or insult (irreverence or sacrilege).",
+"took God's name in vain":"Using the name of God, Jesus, Mary, or the saints carelessly, without reverence.",
+"used God's name carelessly or uselessly":"Invoking God's name as thoughtless filler rather than with meaning and respect.",
+"wished evil on another person":"Genuinely willing harm to befall someone - beyond passing frustration, actually desiring their misfortune.",
+"ate meat on Fridays of Lent or on Ash Wednesday":"Not observing the Church's law of abstinence from meat on the days it binds (Ash Wednesday and the Fridays of Lent).",
+"deliberately missed Mass on Sundays or Holy Days of Obligation":"Skipping Sunday Mass or a Holy Day of Obligation without a serious reason such as illness or genuine impossibility.",
+"did not acknowledge the true presence of Christ in the Eucharist":"Failing to believe or reverence the real presence of Christ - body, blood, soul, and divinity - in the Eucharist.",
+"did not fast as required on Ash Wednesday":"Not keeping the Church's fast, for those bound by it, on Ash Wednesday.",
+"did not arrive to Mass on time, or left Mass early":"Coming late or leaving early without reason; missing a significant part can mean the obligation was not fulfilled.",
+"did not try to observe Sunday as a family day and a day of rest":"Failing to keep Sunday as a day of worship, rest, and time with family.",
+"did unnecessary servile work, physical labor, on a Sunday":"Doing heavy or unnecessary work on Sunday that could have waited, against the day's character of rest.",
+"failed to contribute to the support of the Church":"Neglecting your part in supporting the Church's needs according to your means (a precept).",
+"inattentive at Mass or otherwise failed in reverence for the Most Blessed Sacrament":"Being deliberately distracted or irreverent at Mass, or toward the Blessed Sacrament.",
+"received Holy Communion without respect and reverence":"Approaching Communion carelessly rather than with faith and devotion.",
+"required employees to work on a Sunday":"Obliging others to do unnecessary Sunday work without just cause.",
+"went to Holy Communion without fasting for one hour from food and drink":"Not keeping the one-hour Eucharistic fast from food and drink (water and medicine excepted) before receiving Communion.",
+"deprived family of the necessities of life":"Failing to provide the food, shelter, care, or support your family genuinely needs and you are able to give.",
+"did not care for aged and infirm relatives":"Neglecting elderly or sick family members who depend on you.",
+"disobeyed or disrespected parents or legitimate superiors":"Refusing due obedience or respect to parents or lawful authority (weighed by age and the seriousness of the matter).",
+"did not try to bring peace into home life":"Stirring conflict at home rather than working for peace and harmony.",
+"failed to care for the religious needs of children, early Baptism or proper religious instruction":"Neglecting your children's faith - unduly delaying Baptism or failing to see to their religious formation.",
+"failed to educate self on the true teachings of the Church":"Not making the effort to learn the faith you are responsible for handing on.",
+"gave scandal by word or action, especially to the young":"Leading others, especially children, toward sin by bad example or words (scandal).",
+"failed in obedience or reverence to others in authority":"Withholding due respect or obedience from legitimate authority.",
+"did not give family good religious example":"Failing to model the faith for your family through prayer and practice.",
+"neglected duties to parents":"Falling short in the honor, help, and care you owe your parents.",
+"neglected duties to spouse":"Failing in the love, fidelity, attention, and support owed to your spouse.",
+"neglected the material needs of children":"Failing to provide for your children's basic material needs when able.",
+"neglected to give good religious example to family":"Not setting a faithful example for those in your household.",
+"abused my children":"Harming children entrusted to you - physically, emotionally, or otherwise.",
+"attempted suicide":"Attempting to take your own life. Culpability is often lessened by anguish or illness, and God's mercy is greater than despair - please reach out for help.",
+"encouraged or condoned sterilization":"Promoting or approving sterilization as a means of preventing children.",
+"engaged in sins against human life, such as artificial insemination or in vitro fertilization":"Taking part in procedures that separate the begetting of life from the marital act, which the Church teaches are gravely wrong.",
+"gave bad example by drug abuse, drinking alcohol to excess, fighting, or quarreling":"Setting a harmful example through substance abuse, drunkenness, or fighting.",
+"gave scandal to someone, leading them into sin":"Doing or saying what draws another person into sin.",
+"had an abortion or encouraged someone to have an abortion":"Procuring, undergoing, assisting, or urging an abortion - the direct taking of an unborn life.",
+"abused alcohol or drugs":"Misusing alcohol or drugs; deliberate intoxication to the loss of reason is grave.",
+"been angry or resentful":"Holding on to anger or resentment; it becomes serious when it hardens into hatred or a desire for grave harm.",
+"harbored hatred in my heart":"Nursing genuine hatred toward another person, willing evil to them.",
+"mutilated myself through a form of sterilization":"Undergoing a sterilizing procedure that deliberately destroys fertility.",
+"physically harmed someone":"Inflicting bodily harm on another; its gravity rises with the seriousness of the injury.",
+"took part in or approved of mercy killing, euthanasia":"Supporting or taking part in ending a life to relieve suffering (euthanasia), which is the killing of an innocent person.",
+"used or caused a spouse to use birth control pills":"Using contraceptive pills, or leading a spouse to, in order to prevent conception.",
+"abused marriage rights":"Misusing the intimacy proper to marriage - for example in a selfish, coercive, or deliberately closed-to-life way.",
+"not careful to dress modestly":"Dressing or presenting yourself in a way meant to provoke lust in others.",
+"committed impure acts alone, masturbation":"Deliberately seeking sexual pleasure alone (masturbation).",
+"committed adultery, impure acts with a married person":"Sexual sin involving a married person (adultery).",
+"committed fornication, impure acts with another outside marriage":"Sexual intimacy between unmarried persons (fornication).",
+"deliberately looked at or read impure videos, shows, pictures, books, or movies":"Deliberately seeking out pornographic or lust-inciting images or material.",
+"did not avoid the occasions of impurity":"Placing yourself in situations you know are likely to lead you into impurity.",
+"did not seek to be chaste in thoughts, words, and actions":"Failing to pursue the virtue of chastity proper to your state in life.",
+"did not try to control thoughts and imaginations":"Not making the effort to turn away from impure thoughts or fantasies.",
+"engaged in homosexual activities":"Engaging in homosexual acts, which the Church teaches are contrary to chastity. This concerns acts, not attractions or persons.",
+"engaged in sexual activities outside of marriage":"Any deliberate sexual activity outside of marriage.",
+"encouraged others to sin by failure to maintain good moral standards":"Leading others toward sin by lowering or abandoning your own moral standards.",
+"not been faithful to marriage vows in thought and action":"Breaking faith with your spouse, whether in deed or by cultivating unfaithful desires.",
+"not respected members of the opposite sex, or treated others as objects":"Regarding others as objects for your own gratification rather than as persons.",
+"used contraception or artificial birth control in marriage":"Using artificial contraception to deliberately prevent conception within marriage.",
+"married or advised someone to marry outside the Church":"Marrying, or counseling someone to marry, without the form or permission the Church requires (an invalid or illicit marriage).",
+"self or spouse had sterilization done":"Undergoing sterilization, or a spouse doing so, to prevent children.",
+"practiced artificial birth control by pills, device, or withdrawal":"Using pills, devices, or withdrawal to frustrate the openness of the marital act to life.",
+"told or listened to impure stories":"Telling or willingly listening to lewd stories or talk for the pleasure of it.",
+"used impure or suggestive words":"Speaking in a crude or sexually suggestive way.",
+"willfully entertained impure thoughts or desires":"Deliberately dwelling on and consenting to impure thoughts or desires, as opposed to temptations you resist.",
+"cheated someone out of what is justly theirs, such as creditors or insurance companies":"Depriving others of what they are owed - cheating creditors, insurers, or anyone with a just claim.",
+"did not fulfill contracts, gave or accepted bribes, rashly gambled or speculated":"Breaking agreements, taking or offering bribes, or gambling and speculating recklessly with what you owe others.",
+"did not give a fair wage to employees":"Paying workers less than a just wage for their labor.",
+"did not give a full day's work for a full day's pay":"Not giving honest work for the pay you receive.",
+"did not respect the property of other people":"Damaging, misusing, or failing to safeguard what belongs to others.",
+"does not seek to share what is owned with the poor":"Neglecting the duty to share your goods with those in need.",
+"envies other people's families or possessions":"Resenting the goods, families, or blessings that others enjoy.",
+"has not paid debts promptly":"Delaying payment of debts you are able to pay, in justice to those owed.",
+"has not returned or made restitution for what was stolen":"Failing to return stolen goods or repair the harm of theft, which justice requires.",
+"overcharged someone or took advantage of another's hardship or ignorance":"Exploiting another's need or ignorance to charge unfairly.",
+"took advantage of the poor, simple, inexperienced, or less fortunate":"Using another's weakness, poverty, or inexperience for your own gain.",
+"makes material possessions the purpose of life":"Living as though acquiring and keeping things were the point of life (greed as an ultimate end).",
+"stole, cheated, or helped and encouraged others to steal or keep stolen goods":"Taking what belongs to another, or helping and encouraging theft; gravity rises with the amount and the harm.",
+"wastes time at work, school, or at home":"Habitually squandering time owed to your duties.",
+"committed perjury under oath":"Lying while under oath (perjury).",
+"did not keep secret what should have been kept confidential":"Revealing what you were bound to keep private - a confided or professional secret.",
+"did not stand up for someone unjustly accused, was a channel for rumors true or not":"Failing to defend someone unjustly accused, or passing along rumors whether true or not.",
+"damaged another's reputation by exaggeration or made-up stories":"Harming someone's good name by lies or exaggeration (calumny).",
+"gossiped":"Spreading talk about others' faults or affairs needlessly.",
+"lied":"Speaking what is false with intent to deceive; gravity rises with the harm it causes.",
+"spoke badly of others behind their back":"Revealing another's real faults without necessity, harming their reputation (detraction).",
+"was critical, negative, or uncharitable in thoughts of others":"Judging others harshly in your thoughts, assuming the worst without cause (rash judgment).",
+"was not sincere in dealings with others":"Being two-faced or insincere, lacking honesty and openness with others.",
+"consented to impure thoughts caused by impure reading, movies, websites, talk, or curiosity":"Willingly giving in to impure thoughts stirred up by what you read, watch, or seek out.",
+"did not pray at once to banish impure thoughts and temptations":"Failing to turn to God promptly to resist impure thoughts when they arise.",
+"dwelled on impure thoughts or fantasies for the purpose of arousal":"Deliberately lingering on lustful thoughts or fantasies to arouse yourself.",
+"behaved inappropriately with members of the opposite sex, flirting or being superficial":"Flirtatious or provocative behavior that toys with others or endangers fidelity.",
+"looked at pornography in books or on screen":"Viewing pornography in any form.",
+"willfully lusted after another person":"Deliberately looking at or desiring another with lust, reducing them to an object of desire.",
+"does not appreciate own good qualities, constantly compares self with others and grows resentful":"Failing to receive your own gifts with gratitude, comparing yourself to others until it breeds resentment.",
+"guilty of greed or avarice":"An excessive attachment to acquiring and hoarding wealth or possessions.",
+"has been very selfish":"Habitually putting your own wants first at the expense of others.",
+"lacks trust that God will care for material and spiritual needs":"Anxious grasping that refuses to trust God's provision for what you truly need.",
+"tries to prove superiority by bragging or buying more things":"Seeking to appear better than others through boasting or acquiring more.",
+"jealous of or envied other people, families, or possessions":"Begrudging others the good they have (envy).",
+"made material possessions the purpose of life":"Treating the pursuit of possessions as the goal of your life."
+};
+function sinInfo(t){ return SIN_INFO[t] || ""; }
 
 var PRAYERS = [
   { title:"Prayer Before Confession", tag:"To begin", parch:false, text:"Come, Holy Spirit, enlighten my mind that I may know my sins, and move my heart that I may be truly sorry for them. Help me to confess them honestly and completely, and to resolve, with your grace, to sin no more. Mary, Mother of Mercy, pray for me. Amen." },
@@ -918,7 +1069,11 @@ function makeSin(s, wrap){
   if(isGrave(s)){ var g=document.createElement("span"); g.className="grave"; g.textContent="grave matter"; txt.appendChild(g); }
   else if(isCanGrave(s)){ var g2=document.createElement("span"); g2.className="cangrave"; g2.textContent="can be grave"; txt.appendChild(g2); }
   var xn = document.createElement("span"); xn.className="sin-xn";
+  var info = document.createElement("button"); info.className="sin-info"; info.type="button"; info.setAttribute("aria-label","What this means");
+  info.innerHTML='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg>';
+  info.addEventListener("click", function(e){ e.stopPropagation(); openInfo(s); });
   row.appendChild(box); row.appendChild(txt); row.appendChild(xn);
+  if(sinInfo(s)) row.appendChild(info);
 
   // inline detail: times committed + note
   var detail = document.createElement("div"); detail.className="sin-detail";
@@ -1141,6 +1296,7 @@ function renderConf(){
         var tag="";
         if(f.gravity==="mortal") tag='<span class="tag m">Mortal</span>';
         else if(f.gravity==="venial") tag='<span class="tag v">Venial</span>';
+        else tag='<span class="tag u">To weigh</span>';
         items[i].innerHTML = tag + '<span class="rcol"><span class="rtext"></span><span class="rnote"></span></span>';
         var rt = items[i].querySelector(".rtext");
         rt.textContent = f.text;
@@ -1461,6 +1617,15 @@ function discClose(apply){
 el("discSave").addEventListener("click", function(){ discClose(true); });
 el("discLater").addEventListener("click", function(){ discClose(false); });
 el("discBg").addEventListener("click", function(e){ if(e.target===el("discBg")) discClose(false); });
+
+/* per-sin explanation */
+function openInfo(s){
+  el("infoTitle").textContent = s;
+  el("infoText").textContent = sinInfo(s);
+  el("infoBg").classList.add("show");
+}
+el("infoClose").addEventListener("click", function(){ el("infoBg").classList.remove("show"); });
+el("infoBg").addEventListener("click", function(e){ if(e.target===el("infoBg")) el("infoBg").classList.remove("show"); });
 
 
 /* settings actions */
