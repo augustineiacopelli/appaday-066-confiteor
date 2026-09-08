@@ -344,6 +344,10 @@
   .prayer.parch .pref-btn{background:rgba(107,78,38,.08);border-color:#b09256;color:#6b4e26;}
   .prayer.parch .pref-btn.on{background:#6b4e26;border-color:#6b4e26;color:#e9dcc2;}
 
+  .communion-btn{margin:14px 0 2px;background:rgba(200,164,90,.1);border:1px solid var(--gold-dim);color:var(--gold-soft);}
+  .communion-btn:hover{border-color:var(--gold);}
+  .communion-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;}
+
   @media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important;}}
 </style>
 </head>
@@ -448,6 +452,11 @@
         <div class="cstat venial"><div class="n" id="cVenial">0</div><div class="l">Venial</div></div>
         <div class="cstat"><div class="n" id="cUnsure">0</div><div class="l">To weigh</div></div>
       </div>
+
+      <button class="btn communion-btn" id="communionBtn" style="display:none">
+        <svg viewBox="0 0 24 24"><path d="M6 3h12M8 3v4a4 4 0 0 0 8 0V3M12 11v7M8 21h8"/></svg>
+        <span class="cb-label">Received Communion</span>
+      </button>
 
       <details class="guide">
         <summary>
@@ -1167,6 +1176,14 @@ function renderReview(){
   el("cVenial").textContent = c.venial;
   el("cUnsure").textContent = c.unsure;
 
+  var cb = el("communionBtn");
+  if(cb){
+    if(c.venial>0 && state.flags.length>0){
+      cb.style.display="flex";
+      cb.querySelector(".cb-label").textContent = "Received Communion - clear "+c.venial+" venial sin"+(c.venial===1?"":"s");
+    } else cb.style.display="none";
+  }
+
   if(state.flags.length===0){
     empty.style.display="block"; enterBtn.disabled=true; clearBtn.disabled=true; return;
   }
@@ -1676,6 +1693,18 @@ el("setClearList").addEventListener("click", function(){
 el("clearListBtn").addEventListener("click", function(){
   ask("Clear your list","This removes everything you have flagged and noted. This cannot be undone.","Clear",true).then(function(ok){
     if(ok){ state.flags=[]; saveState(); updateCounts(); renderReview(); }
+  });
+});
+el("communionBtn").addEventListener("click", function(){
+  var n = state.flags.filter(function(f){ return f.gravity==="venial"; }).length;
+  if(!n) return;
+  ask("Received Communion","Worthily receiving the Eucharist cleanses venial sins for those properly disposed. Clear the "+n+" sin"+(n===1?"":"s")+" you marked venial? Your mortal and unweighed sins are kept.","Clear venial sins",false).then(function(ok){
+    if(ok){
+      state.flags = state.flags.filter(function(f){ return f.gravity!=="venial"; });
+      saveState(); renderReview(); updateCounts();
+      if(el("view-examine").classList.contains("active")) buildExamine();
+      toast(n+" venial sin"+(n===1?"":"s")+" cleared. Thanks be to God.");
+    }
   });
 });
 el("setResetAll").addEventListener("click", function(){
